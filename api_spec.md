@@ -37,7 +37,7 @@
         - This method is ideally designed for usage from configuration management tools
         - Arguments:
             - Ucshandle
-            - Naming Peroperties as mandatory parameters
+            - Naming Properties as mandatory parameters
             - RW props **kwargs
 
     - module_exists:
