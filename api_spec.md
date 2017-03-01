@@ -10,17 +10,43 @@
 #### required APIs per module
 
     - module_create/module_add/module_enable
-        - Arguments: Naming and RW properties should be specified as explicit arguments
+        - Arguments:
+            - UcsHandle
+            - Naming and RW properties should be specified as explicit arguments
+            - Naming property should be a mandatory argument. No default values
+            - RW props should not be mandatory and have `None` as the default value.
+            - do not include `status` in arguments even though it is a RW
+              property.
+            - have **kwargs as the last argument. This allows for
+              extensibility.
+        - API logic:
+            - always include `set_prop_multiple(**kwargs)` in the function
+              implementation
         - Returns: Created MO
 
     - module_delete/module_remove/module_disable
+        - Arguments:
+            - UcsHandle
+            - Naming properties as mandatory argument(s)
+        - Returns:
+            - Nothing
+
+    - module_get/module_query
 
     - module_modify(where applicable)
         - This method is ideally designed for usage from configuration management tools
-        - Arguments: only takes Naming props and kwargs. No need to specify RW props explicitly.
+        - Arguments:
+            - Ucshandle
+            - Naming Peroperties as mandatory parameters
+            - RW props **kwargs
 
     - module_exists:
         - This method is ideally designed for usage from configuration management tools
-        - Gets a MO(s) as input to compare against server state. Intention is to check if the supplied MO(s) exist on the server. The supplied MO may have populated only some attribute values. These attribute values must also be compared with the server copy of the MO. False should be returned if the MO does not exist on the server or any of the populated property values do not match the supplied client copy.
+        - Arguments:
+            - Ucshandle
+            - Naming properties as manadatory parameters
+            - **kwargs
+        - API Logic
+            - always use `mo.check_prop_match(**kwargs)`
         - Returns: (boolean, server_copy of mo)
 
