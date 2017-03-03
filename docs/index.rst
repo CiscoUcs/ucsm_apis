@@ -6,6 +6,7 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
+   ucsm_apis
    readme
    installation
    usage
