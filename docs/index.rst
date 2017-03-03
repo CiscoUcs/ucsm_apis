@@ -6,13 +6,13 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   ucsm_apis
    readme
    installation
    usage
    contributing
    authors
    history
+   modules
 
 Indices and tables
 ==================
