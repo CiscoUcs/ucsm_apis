@@ -14,7 +14,7 @@
             - UcsHandle
             - Naming and RW properties should be specified as explicit arguments
             - Naming property should be a mandatory argument. No default values
-            - RW props should not be mandatory and have `None` as the default value.
+            - RW props should not be mandatory. Default values can be as per UI defaults or `None`
             - do not include `status` in arguments even though it is a RW
               property.
             - have **kwargs as the last argument. This allows for
