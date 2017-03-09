@@ -16,10 +16,6 @@ import logging
 log = logging.getLogger('ucs')
 
 
-from ..utils.utils import boot_policy_dn_get
-from ..utils.utils import boot_policy_mo_get
-from ..utils.utils import mo_exist
-
 from ucsmsdk.mometa.lsboot.LsbootPolicy import LsbootPolicy
 
 from ucsmsdk.mometa.lsboot.LsbootVirtualMedia import LsbootVirtualMedia
@@ -34,11 +30,30 @@ from ucsmsdk.mometa.lsboot.LsbootUsbInternalImage import LsbootUsbInternalImage
 from ucsmsdk.mometa.lsboot.LsbootUsbExternalImage import LsbootUsbExternalImage
 
 
+def boot_policy_dn_get(name, parent_dn="org-root"):
+    return parent_dn + "/boot-policy-" + name
+
+
+def boot_policy_get(handle, name, parent_dn="org-root"):
+    dn = boot_policy_dn_get(name, parent_dn)
+    mo = handle.query_dn(dn)
+    if mo is None:
+        raise UcscOperationError("boot_policy_get", "BootPolicy %s does not exist" % dn)
+    return mo
+
+
+def mo_exist(func, primary_kwargs=None, *args, **kwargs):
+    try:
+        mo = func(*args, **kwargs)
+    except UcsOperationError:
+        return (False, None)
+    mo_exists = mo.check_prop_match(**primary_kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
 
 def boot_policy_create(handle, name, boot_mode="legacy", descr=None, enforce_vnic_name=None, policy_owner=None, reboot_on_update=None,  parent_dn="org-root", **kwargs):
     """
     This method creates boot policy.
-
     Args:
         handle (UcsHandle)
         name (string): Name of the boot policy.
@@ -48,10 +63,8 @@ def boot_policy_create(handle, name, boot_mode="legacy", descr=None, enforce_vni
         policy_owner (string): "local" or "pending-policy" or  "policy"
         reboot_on_update (string): "yes" or "no"
         parent_dn (string): Org DN.
-
     Returns:
         LsbootPolicy: Managed Object
-
     Example:
         boot_policy_create(handle, name="sample_boot",
                             reboot_on_update="yes",
@@ -96,7 +109,7 @@ def boot_policy_modify(handle, name, parent_dn="org-root", **kwargs):
                                 parent_dn="org-root/org-test")
     """
 
-    mo = boot_policy_mo_get(handle, parent_dn, name=name)
+    mo = boot_policy_get(handle=handle, name=name, parent_dn=parent_dn)
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
@@ -123,8 +136,7 @@ def boot_policy_delete(handle, name, parent_dn="org-root"):
         boot_policy_remove(handle, name="sample_boot",
                             parent_dn="org-root/org-test")
     """
-
-    mo = boot_policy_mo_get(handle, parent_dn, name=name)
+    mo = boot_policy_get(handle=handle, name=name, parent_dn=parent_dn)
     handle.remove_mo(mo)
     handle.commit()
 
@@ -153,103 +165,200 @@ def boot_policy_exist(handle, name, parent_dn="org-root", **kwargs):
                         parent_dn="org-root/org-finance")
     """
 
-    return mo_exist(func=boot_policy_mo_get, handle=handle, parent_dn=parent_dn, name=name, primary_kwargs=kwargs)
+    return mo_exist(func=boot_policy_mo_get, handle=handle, name=name, parent_dn=parent_dn, primary_kwargs=kwargs)
 
 
-def _add_device(handle, parent_mo, boot_device):
-    count = 0
-    children = handle.query_children(parent_mo)
-    for child in children:
-        if hasattr(child, 'order'):
-            order = getattr(child, 'order')
-            if order not in boot_device:
-                log.debug("Deleting boot device from boot policy: %s",
-                          child.dn)
-                handle.remove_mo(child)
-                
-    for k in boot_device.keys():
-        log.debug("Add boot device: order=%s, %s", k, boot_device[k])
-        if boot_device[k] in ["cdrom-local", "cdrom"]:
-            _add_cdrom_local(parent_mo, k)
-        elif boot_device[k] == "cdrom-cimc":
-            _add_cdrom_cimc(parent_mo, k)
-        elif boot_device[k] == "cdrom-remote":
-            _add_cdrom_remote(parent_mo, k)
-        elif boot_device[k] in ["lun", "local-disk", "sd-card", "usb-internal",
-                                "usb-external"]:
-            if count == 0:
-                mo = LsbootStorage(parent_mo_or_dn=parent_mo, order=k)
-                mo_1 = LsbootLocalStorage(parent_mo_or_dn=mo)
-                count += 1
-            if boot_device[k] == "lun":
-                _add_local_lun(mo_1, k)
-            elif boot_device[k] == "local-disk":
-                _add_local_disk(mo_1, k)
-            elif boot_device[k] == "sd-card":
-                _add_sd_card(mo_1, k)
-            elif boot_device[k] == "usb-internal":
-                _add_usb_internal(mo_1, k)
-            elif boot_device[k] == "usb-external":
-                _add_usb_external(mo_1, k)
-        elif boot_device[k] in ["floppy", "floppy-local"]:
-            _add_floppy_local(parent_mo, k)
-        elif boot_device[k] == "floppy-external":
-            _add_floppy_remote(parent_mo, k)
-        elif boot_device[k] == "virtual-drive":
-            _add_virtual_drive(parent_mo, k)
-        else:
-            log.debug("Option <%s> not recognized." % boot_device[k])
+def _lsboot_local_storage_get(boot_policy_mo):
+    lsboot_storage =  LsbootStorage(parent_mo_or_dn=boot_policy_mo)
+    return LsbootLocalStorage(parent_mo_or_dn=lsboot_storage)
 
 
-def _add_cdrom_local(parent_mo, order):
-    LsbootVirtualMedia(parent_mo_or_dn=parent_mo,
-                       access="read-only-local",
-                       order=order)
-
-
-def _add_cdrom_remote(parent_mo, order):
-    LsbootVirtualMedia(parent_mo_or_dn=parent_mo,
-                       access="read-only-remote",
-                       order=order)
-
-
-def _add_cdrom_cimc(parent_mo, order):
-    LsbootVirtualMedia(parent_mo_or_dn=parent_mo,
-                       access="read-only-remote-cimc",
-                       order=order)
-
-
-def _add_floppy_local(parent_mo, order):
-    LsbootVirtualMedia(parent_mo_or_dn=parent_mo,
-                       access="read-write-local",
-                       order=order)
-
-
-def _add_floppy_remote(parent_mo, order):
-    LsbootVirtualMedia(parent_mo_or_dn=parent_mo, access="read-write-remote",
-                       order=order)
-
-
-def _add_virtual_drive(parent_mo, order):
-    LsbootVirtualMedia(parent_mo_or_dn=parent_mo, access="read-write-drive",
-                       order=order)
-
-
-def _add_local_disk(parent_mo, order):
+def _local_disk_add(parent_mo, order):
     LsbootDefaultLocalImage(parent_mo_or_dn=parent_mo, order=order)
 
 
-def _add_local_lun(parent_mo, order):
+def _local_lun_add(parent_mo, order):
     LsbootLocalHddImage(parent_mo_or_dn=parent_mo, order=order)
 
 
-def _add_sd_card(parent_mo, order):
+def _local_jbod_add(parent_mo, order, type, slot_number):
+    from ucsmsdk.mometa.lsboot.LsbootLocalDiskImage import LsbootLocalDiskImage
+    from ucsmsdk.mometa.lsboot.LsbootLocalDiskImagePath import LsbootLocalDiskImagePath
+
+    mo_ = LsbootLocalDiskImage(parent_mo_or_dn=parent_mo, order=order)
+    LsbootLocalDiskImagePath(parent_mo_or_dn=mo_, type=type, slot_number=slot_number)
+
+
+def _local_sdcard_add(parent_mo, order):
     LsbootUsbFlashStorageImage(parent_mo_or_dn=parent_mo, order=order)
 
 
-def _add_usb_internal(parent_mo, order):
+def _local_int_usb_add(parent_mo, order):
     LsbootUsbInternalImage(parent_mo_or_dn=parent_mo, order=order)
 
 
-def _add_usb_external(parent_mo, order):
+def _local_ext_usb_add(parent_mo, order):
     LsbootUsbExternalImage(parent_mo_or_dn=parent_mo, order=order)
+
+
+def _local_embed_lun_add(parent_mo, order):
+    LsbootEmbeddedLocalLunImage(parent_mo_or_dn=parent_mo, order=order)
+
+
+def _local_embed_disk_add(parent_mo, order):
+    LsbootEmbeddedLocalDiskImage(parent_mo_or_dn=parent_mo, order=order)
+
+
+def _vmedia_cd_dvd_local(parent_mo, order):
+    LsbootVirtualMedia(parent_mo_or_dn=parent_mo, access="read-only-local", order=order)
+
+
+def _vmedia_cd_dvd_remote(parent_mo, order):
+    LsbootVirtualMedia(parent_mo_or_dn=parent_mo, access="read-only-remote", order=order)
+
+
+def _vmedia_floppy_local(parent_mo, order):
+    LsbootVirtualMedia(parent_mo_or_dn=parent_mo, access="read-write-local", order=order)
+
+
+def _vmedia_floppy_remote(parent_mo, order):
+    LsbootVirtualMedia(parent_mo_or_dn=parent_mo, access="read-write-remote", order=order)
+
+
+def _vmedia_vd_remote(parent_mo, order):
+    LsbootVirtualMedia(parent_mo_or_dn=parent_mo, access="read-write-drive", order=order)
+
+
+def _vmedia_cimc_cd_dvd(parent_mo, order):
+    LsbootVirtualMedia(parent_mo_or_dn=parent_mo, access="read-only-remote-cimc", order=order)
+
+
+def _vmedia_cimc_mounted_hdd(parent_mo, order):
+    LsbootVirtualMedia(parent_mo_or_dn=parent_mo, access="read-write-remote-cimc", order=order)
+
+
+_local_devices = {"local_disk": _local_disk_add,
+                  "local_lun": _local_lun_add,
+                  "local_jbod": _local_jbod_add,
+                  "sd_card": _local_sdcard_add,
+                  "internal_usb": _local_int_usb_add,
+                  "external_usb": _local_ext_usb_add,
+                  "embedded_local_lun": _local_embed_lun_add,
+                  "embedded_local_disk": _local_embed_disk_add
+                  }
+
+
+_vmedia_devices = {"cd_dvd_local": _vmedia_cd_dvd_local,
+                   "cd_dvd_remote": _vmedia_cd_dvd_remote,
+                   "floppy_local": _vmedia_floppy_local,
+                   "floppy_remote": _vmedia_floppy_remote,
+                   "virtual_drive_remote": _vmedia_vd_remote,
+                   "cimc_mounted_cd_dvd": _vmedia_cimc_cd_dvd,
+                   "cimc_mounted_hdd": _vmedia_cimc_mounted_hdd}
+
+
+def _local_device_add(lsboot_local_storage, device_name, order, **kwargs):
+    _local_devices[device_name](parent_mo=lsboot_local_storage, order=order, **kwargs)
+
+
+def _vmedia_device_add(parent_mo, device_name, order):
+    _vmedia_devices[device_name](parent_mo=parent_mo, order=order)
+
+
+def _lan_device_add(parent_mo, order, vnic_name, type="primary", **kwargs):
+	from ucsmsdk.mometa.lsboot.LsbootLan import LsbootLan
+	from ucsmsdk.mometa.lsboot.LsbootLanImagePath import LsbootLanImagePath
+
+	mo_ = LsbootLan(parent_mo_or_dn=parent_mo, order=order, prot="pxe")
+	LsbootLanImagePath(parent_mo_or_dn=mo_, vnic_name=vnic_name, type=type)
+
+
+def _san_image_path_add(parent_mo, wwn, type, lun):
+    from ucsmsdk.mometa.lsboot.LsbootSanCatSanImagePath import LsbootSanCatSanImagePath
+
+    LsbootSanCatSanImagePath(parent_mo_or_dn=parent_mo, wwn=wwn, type=type, lun=lun)
+
+
+def _san_device_add(parent_mo, order, vnic_name, type="primary", add_image_path=False, wwn=None, lun=None):
+    from ucsmsdk.mometa.lsboot.LsbootSan import LsbootSan
+    from ucsmsdk.mometa.lsboot.LsbootSanCatSanImage import LsbootSanCatSanImage
+
+    mo_ = LsbootSan(parent_mo_or_dn=parent_mo, order=order)
+    san_image = LsbootSanCatSanImage(parent_mo_or_dn=mo_, vnic_name=vnic_name, type=type)
+
+    if not add_image_path:
+		return
+
+    _san_image_path_add(parent_mo=san_image, wwn=wwn, type=type, lun=lun)
+
+
+def _iscsi_device_add(parent_mo, order, vnic_name, type="primary"):
+	from ucsmsdk.mometa.lsboot.LsbootIScsi import LsbootIScsi
+	from ucsmsdk.mometa.lsboot.LsbootIScsiImagePath import LsbootIScsiImagePath
+
+	mo_ = LsbootIScsi(parent_mo_or_dn=parent_mo, order=order)
+	LsbootIScsiImagePath(parent_mo_or_dn=mo_, i_scsi_vnic_name=vnic_name, type=type)
+
+
+def _efi_shell_device_add():
+	pass
+
+
+def _device_add(handle, boot_policy, devices):
+    is_first_local_device = True
+    for device in devices:
+        device_name = device["device_name"]
+        device_order = str(device["device_order"])
+        device_props = device["device_props"]
+
+        if device_name in _local_devices:
+            if is_first_local_device:
+                lsboot_storage =  LsbootStorage(parent_mo_or_dn=boot_policy)
+                lsboot_local_storage = LsbootLocalStorage(parent_mo_or_dn=lsboot_storage)
+                # handle.add_mo(lsboot_storage, True)
+                is_first_local_device = False
+            _local_device_add(lsboot_local_storage, device_name, device_order, **device_props)
+        elif device_name in _vmedia_devices:
+            _vmedia_device_add(boot_policy, device_name, device_order)
+        elif device_name == "lan":
+            _lan_device_add(boot_policy, device_order, **device_props)
+        elif device_name == "san":
+            _san_device_add(boot_policy, device_order, **device_props)
+        elif device_name == "iscsi":
+            _iscsi_device_add(boot_policy, device_order, **device_props)
+        elif device_name == "efi":
+            _efi_shell_device_add()
+        else:
+            raise ValueError("Invalid Device <%s>" % device_name)
+
+
+def _device_remove_all(handle, boot_policy):
+    from ucsmsdk import ucsgenutils
+
+    mo_list = handle.query_children(in_mo=boot_policy)
+    if mo_list is None:
+        return
+    for mo in mo_list:
+        handle.remove_mo(mo)
+		# mo.status = "deleted"
+		# boot_policy._child.append(mo)
+
+    if boot_policy.reboot_on_update in ucsgenutils.AFFIRMATIVE_LIST:
+		boot_policy.reboot_on_update = False
+		handle.set_mo(boot_policy)
+		handle.commit()
+		boot_policy.reboot_on_update = True
+		handle.set_mo(boot_policy)
+    handle.commit()
+
+
+def boot_policy_order_set(handle, boot_policy, devices):
+    _device_remove_all(handle, boot_policy)
+
+    _device_add(handle, boot_policy, devices)
+    handle.set_mo(boot_policy)
+    handle.commit()
+
+
+
+
