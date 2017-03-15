@@ -206,11 +206,14 @@ def _local_lun_add(parent_mo, order, lun_name=None, type=None):
         child_count = len(mo[0].child)
         if child_count >= 2:
             raise UcsOperationError(
-    "_local_lun_add",
-     "Both instance of Local Lun already added.")
+                "_local_lun_add",
+                "Both instance of Local Lun already added.")
         if mo[0].child[0].type == type:
-            raise UcsOperationError("_local_lun_add",
-                                    "Instance of Local Lun of type '%s' already added at  order '%s'." % (type, mo[0].order))
+            raise UcsOperationError(
+                "_local_lun_add",
+                "Instance of Local Lun of type '%s' already added at  order '%s'." %
+                (type,
+                 mo[0].order))
 
         if not lun_name or not type:
             raise UcsOperationError(
@@ -241,19 +244,19 @@ def _local_jbod_add(parent_mo, order, slot_number):
           if mo.get_class_id() == "LsbootLocalDiskImage"]
     if mo:
         raise UcsOperationError(
-    "_local_jbod_add",
-    "Instance of Local JBOD already added at order '%s'" %
-     mo[0].order)
+            "_local_jbod_add",
+            "Instance of Local JBOD already added at order '%s'" %
+            mo[0].order)
 
     if not slot_number:
         raise UcsOperationError("_local_jbod_add",
-     "Required Parameter 'slot_number' missing")
+                                "Required Parameter 'slot_number' missing")
 
     mo = LsbootLocalDiskImage(parent_mo_or_dn=parent_mo, order=order)
     LsbootLocalDiskImagePath(
-    parent_mo_or_dn=mo,
-    type="primary",
-     slot_number=slot_number)
+        parent_mo_or_dn=mo,
+        type="primary",
+        slot_number=slot_number)
 
 
 def _local_embedded_disk_add(parent_mo, order, slot_number=None, type=None):
@@ -319,9 +322,9 @@ def _lan_device_add(parent_mo, order, vnic_name):
                                     "Required parameter 'vnic_name' missing.")
 
         LsbootLanImagePath(
-    parent_mo_or_dn=mo[0],
-    vnic_name=vnic_name,
-     type="secondary")
+            parent_mo_or_dn=mo[0],
+            vnic_name=vnic_name,
+            type="secondary")
         return
 
     if not vnic_name:
@@ -329,9 +332,9 @@ def _lan_device_add(parent_mo, order, vnic_name):
 
     mo_ = LsbootLan(parent_mo_or_dn=parent_mo, order=order, prot="pxe")
     LsbootLanImagePath(
-    parent_mo_or_dn=mo_,
-    vnic_name=vnic_name,
-     type="primary")
+        parent_mo_or_dn=mo_,
+        vnic_name=vnic_name,
+        type="primary")
 
 
 def _san_device_add(parent_mo, order,
@@ -378,14 +381,14 @@ def _san_device_add(parent_mo, order,
                 sub_child_count = len(sub_child)
                 if sub_child_count >= 2:
                     raise UcsOperationError(
-    "_san_device_add",
-     "Both instance of SAN target devices are already added.")
+                        "_san_device_add",
+                        "Both instance of SAN target devices are already added.")
 
                 if sub_child[0].type == target_type:
                     raise UcsOperationError(
-    "_san_device_add",
-    "Instance of SAN target type '%s' is already added." %
-     target_type)
+                        "_san_device_add",
+                        "Instance of SAN target type '%s' is already added." %
+                        target_type)
 
                 LsbootSanCatSanImagePath(parent_mo_or_dn=mo[0].child[0],
                                          wwn=wwn, type=target_type, lun=lun)
@@ -399,9 +402,10 @@ def _san_device_add(parent_mo, order,
                                          wwn=wwn, type=target_type, lun=lun)
                 return
             else:
-                raise UcsOperationError("_san_device_add",
-                                    "Instance of San of type '%s' already "
-                                    "added at order '%s'." % (type, mo[0].order))
+                raise UcsOperationError(
+                    "_san_device_add", "Instance of San of type '%s' already "
+                    "added at order '%s'." %
+                    (type, mo[0].order))
 
         if not vnic_name or not type:
             raise UcsOperationError("_san_device_add",
@@ -528,15 +532,6 @@ def _local_device_add(parent_mo, device_name, device_order, **kwargs):
         return
 
     class_id = _local_devices[device_name][0]
-    # class_info = _class_details(class_id)
-    # class_props = class_info['props']
-    # if class_props:
-    #    for prop in class_props:
-    #        if prop not in kwargs:
-    #            raise UcsOperationError("TO Be added",
-    #                                "Required Property '%s' missing." % prop)
-    # if class_info("sub_child_props") and is class_info("")
-
     class_struct = load_class(class_id)
     class_obj = class_struct(parent_mo_or_dn=parent_mo, order=device_order,
                              **kwargs)
@@ -582,14 +577,14 @@ def _validate_device_combination(devices):
 
     if local_outer_level and local_inner_level:
         raise UcsOperationError(
-    "_device_add",
-     "local_disk cannot be added with other local devices.")
+            "_device_add",
+            "local_disk cannot be added with other local devices.")
     elif cd_dvd and cd_dvd_rest:
         raise UcsOperationError("_device_add",
-     "'cd_dvd' or 'cd_dvd_local, cd_dvd_remote'")
+                                "'cd_dvd' or 'cd_dvd_local, cd_dvd_remote'")
     elif floppy and floppy_rest:
         raise UcsOperationError("_device_add",
-     "'floppy' or 'floppy_local, floppy_remote'")
+                                "'floppy' or 'floppy_local, floppy_remote'")
 
 
 def _device_add(handle, boot_policy, devices):
@@ -624,7 +619,10 @@ def _device_add(handle, boot_policy, devices):
         elif device_name == "efi":
             _efi_shell_device_add()
         else:
-            raise UcsOpeartionError("_device_add", " Invalid Device <%s>" % device_name)
+            raise UcsOpeartionError(
+                "_device_add",
+                " Invalid Device <%s>" %
+                device_name)
 
 
 def _boot_policy_order_clear(handle, boot_policy):
@@ -651,7 +649,10 @@ def boot_policy_order_set(handle, boot_policy_dn, devices):
 
     boot_policy = handle.query_dn(boot_policy_dn)
     if not boot_policy:
-        raise UcsOpeationError("boot_policy_order_set", "BootPollicy '%s' does not exist." % boot_policy_dn)
+        raise UcsOpeationError(
+            "boot_policy_order_set",
+            "BootPollicy '%s' does not exist." %
+            boot_policy_dn)
 
     # Removes all the devices from the boot order
     _boot_policy_order_clear(handle, boot_policy)
@@ -660,67 +661,3 @@ def boot_policy_order_set(handle, boot_policy_dn, devices):
     _device_add(handle, boot_policy, devices)
     handle.set_mo(boot_policy)
     handle.commit()
-
-
-# def _local_device_mo_to_dict(mo_list):
-#     mo_dict = {}
-#     for mo in mo_list:
-#         mo_dict[mo.get_class_id()] = mo
-#     return mo_dict
-#
-#
-# def _vmedia_device_mo_to_dict(mo_list):
-#     mo_dict = {}
-#     for mo in mo_list:
-#         mo_dict[mo.access] = mo
-#     return mo_dict
-#
-#
-# def _device_dict_prepare(mo):
-#
-#     local_devices_mo = None
-#     vmedia_devices_mo = None
-#     lan_mo = None
-#     san_mo = None
-#     iscsi_mo = None
-#     efi_mo = None
-#     device_mo_dict = {}
-#     for mo in mo.child:
-#         class_id = mo.get_class_id()
-#         if class_id == "LsbootStorage":
-#             local_devices_mo = mo.child[0].child
-#             device_mo_dict.update(_local_device_mo_to_dict(local_devices_mo))
-#         elif class_id == "LsbootVirtualMedia":
-#             vmedia_devices_mo = mo.child
-#             device_mo_dict.update(_local_device_mo_to_dict(_vmedia_devices_mo))
-#         elif class_id == "LsbootLan":
-#             device_mo_dict["lan"] = mo
-#         elif class_id == "LsbootSan":
-#             device_mo_dict["san"] = mo
-#         elif class_id == "LsbootIScsi":
-#             device_mo_dict["iscsi"] = mo
-#         else:
-#             print ("Unknown_device %s" % class_id)
-#
-#     return device_mo_dict
-#
-#
-# def _device_dict_compare(exist_mo, expected_mo):
-#     pass
-#
-#
-# def boot_policy_order_exist(handle, boot_policy, devices):
-#     response = handle.query_dn(dn=boot_policy.dn, hierarchy=True,
-#                                need_response=True)
-#     mo = response.out_configs.child[0]
-#     if not mo:
-#         return False
-#
-#     ucsm_state = device_dict_prepare(mo)
-#
-#     _device_add(handle, boot_policy, devices)
-#     expected_state = device_dict_prepare(boot_policy)
-#
-#     for key in ucsm_state:
-#         if key not in expected_state:
-#             return False
