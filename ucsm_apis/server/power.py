@@ -26,8 +26,8 @@ def _server_dn_get(chassis_id=None, blade_id=None, rack_id=None):
     else:
         raise UcsOperationError(
             "server_admin_state_set: Failed to set power state",
-            "Missing mandatory arguments. Specify either of, \
-            (chassis_id, blade_id) or rack_id")
+            "Missing mandatory arguments. Specify either of "\
+            "(chassis_id, blade_id) or rack_id")
     return dn
 
 
@@ -45,12 +45,12 @@ def _service_profile_power_set(
     if blade_mo is None:
         raise UcsOperationError(
             "server_power_set: Failed to set server power",
-            "sever %s does not exist" % (dn))
+            "server %s does not exist" % (dn))
 
     if blade_mo.assigned_to_dn is None:
         raise UcsOperationError(
             "server_power_set: Failed to set server power",
-            "sever %s is not associated to a service profile" % (dn))
+            "server %s is not associated to a service profile" % (dn))
 
     sp_mo = handle.query_dn(blade_mo.assigned_to_dn)
     LsPower(
@@ -157,7 +157,7 @@ def server_power_cycle_wait(
         None
 
     Raises:
-        UcsOperationError 
+        UcsOperationError
 
     Example:
         server_power_cycle_wait(handle, chassis_id=1, blade_id=2)
@@ -190,7 +190,7 @@ def server_power_cycle_immediate(
         None
 
     Raises:
-        UcsOperationError 
+        UcsOperationError
 
     Example:
         server_power_cycle_immediate(handle, chassis_id=1, blade_id=2)
