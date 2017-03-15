@@ -24,10 +24,10 @@ def _server_dn_get(chassis_id=None, blade_id=None, rack_id=None):
     elif rack_id:
         dn = rack_dn_get(rack_id)
     else:
-        UcsOperationError(
+        raise UcsOperationError(
             "server_admin_state_set: Failed to set power state",
-            "Missing mandatory arguments. Specify either of, \
-            (chassis_id, blade_id) or rack_id")
+            "Missing mandatory arguments. Specify either of "\
+            "(chassis_id, blade_id) or rack_id")
     return dn
 
 
@@ -43,14 +43,14 @@ def _service_profile_power_set(
         rack_id=rack_id)
     blade_mo = handle.query_dn(dn)
     if blade_mo is None:
-        UcsOperationError(
+        raise UcsOperationError(
             "server_power_set: Failed to set server power",
-            "sever %s does not exist" % (dn))
+            "server %s does not exist" % (dn))
 
     if blade_mo.assigned_to_dn is None:
-        UcsOperationError(
+        raise UcsOperationError(
             "server_power_set: Failed to set server power",
-            "sever %s is not associated to a service profile" % (dn))
+            "server %s is not associated to a service profile" % (dn))
 
     sp_mo = handle.query_dn(blade_mo.assigned_to_dn)
     LsPower(
@@ -61,6 +61,25 @@ def _service_profile_power_set(
 
 
 def server_power_on(handle, chassis_id=None, blade_id=None, rack_id=None):
+    """
+    Power-On the server.
+
+    Args:
+        handle (UcscHandle)
+        chassis_id (int): chassis id
+        blade_id (int): blade id
+        rack_id (int): rack id
+
+    Returns:
+        None
+
+    Raises:
+        UcsOperationError
+
+    Example:
+        server_power_on(handle, chassis_id=1, blade_id=2)
+        server_power_on(handle, rack_id=1)
+    """
     _service_profile_power_set(
         handle=handle,
         chassis_id=chassis_id,
@@ -70,6 +89,26 @@ def server_power_on(handle, chassis_id=None, blade_id=None, rack_id=None):
 
 
 def server_power_off(handle, chassis_id=None, blade_id=None, rack_id=None):
+    """
+    Power-Off the server.
+
+    Args:
+        handle (UcscHandle)
+        chassis_id (int): chassis id
+        blade_id (int): blade id
+        rack_id (int): rack id
+
+    Returns:
+        None
+
+    Raises:
+        UcsOperationError
+
+    Example:
+        server_power_off(handle, chassis_id=1, blade_id=2)
+        server_power_off(handle, rack_id=1)
+    """
+
     _service_profile_power_set(
         handle=handle,
         chassis_id=chassis_id,
@@ -90,7 +129,7 @@ def _server_admin_power_set(
         rack_id=rack_id)
     mo = handle.query_dn(dn)
     if mo is None:
-        UcsOperationError(
+        raise UcsOperationError(
             "_server_admin_power_set",
             "server %s not found" %
             (dn))
@@ -105,6 +144,26 @@ def server_power_cycle_wait(
         chassis_id=None,
         blade_id=None,
         rack_id=None):
+    """
+    Triggers a graceful OS shutdown and powercycle operation on the specified server.
+
+    Args:
+        handle (UcscHandle)
+        chassis_id (int): chassis id
+        blade_id (int): blade id
+        rack_id (int): rack id
+
+    Returns:
+        None
+
+    Raises:
+        UcsOperationError
+
+    Example:
+        server_power_cycle_wait(handle, chassis_id=1, blade_id=2)
+        server_power_cycle_wait(handle, rack_id=1)
+    """
+
     _server_admin_power_set(
         handle=handle,
         chassis_id=chassis_id,
@@ -118,6 +177,26 @@ def server_power_cycle_immediate(
         chassis_id=None,
         blade_id=None,
         rack_id=None):
+    """
+    Triggers an immediate powercycle operation on the specified server.
+
+    Args:
+        handle (UcscHandle)
+        chassis_id (int): chassis id
+        blade_id (int): blade id
+        rack_id (int): rack id
+
+    Returns:
+        None
+
+    Raises:
+        UcsOperationError
+
+    Example:
+        server_power_cycle_immediate(handle, chassis_id=1, blade_id=2)
+        server_power_cycle_immediate(handle, rack_id=1)
+    """
+
     _server_admin_power_set(
         handle=handle,
         chassis_id=chassis_id,
