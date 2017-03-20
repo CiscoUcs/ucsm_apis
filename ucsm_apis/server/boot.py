@@ -201,7 +201,7 @@ def _local_lun_add(parent_mo, order, lun_name=None, type=None):
         raise UcsOperationError(
             "_local_lun_add",
             "Instance of Local Lun already added at order '%s'" %
-            order)
+            mo[0].order)
     if mo and mo[0].child:
         child_count = len(mo[0].child)
         if child_count >= 2:
@@ -371,11 +371,35 @@ def _san_device_add(parent_mo, order,
     elif mo and mo[0].child:
         child_count = len(mo[0].child)
         if child_count >= 2:
-            raise UcsOperationError("_san_device_add",
-                                    "Both instance of SAN Devices are "
-                                    "already added.")
+            if not(wwn or lun or target_type):
+             raise UcsOperationError("_san_device_add",
+                                     "Both instance of SAN Devices are "
+                                     "already added.")
 
+            sub_child = mo[0].child[0].child
+            if sub_child:
+                sub_child_count = len(sub_child)
+                if sub_child_count >= 2:
+                    raise UcsOperationError(
+                        "_san_device_add",
+                        "Both instance of SAN target devices are already added.")
+
+                if sub_child[0].type == target_type:
+                    raise UcsOperationError(
+                        "_san_device_add",
+                        "Instance of SAN target type '%s' is already added." %
+                        target_type)
+
+                LsbootSanCatSanImagePath(parent_mo_or_dn=mo[0].child[0],
+                                         wwn=wwn, type=target_type, lun=lun)
+                return
+        if not (vnic_name and type):
+            raise UcsOperationError("_san_device_add",
+                                    "Instance of San device already added")
         if mo[0].child[0].type == type:
+            if not (wwn and lun and target_type):
+                raise UcsOperationError("_san_device_add", "Instance of '%s' san image is already added." % type)
+
             sub_child = mo[0].child[0].child
             if sub_child:
                 sub_child_count = len(sub_child)
@@ -401,30 +425,19 @@ def _san_device_add(parent_mo, order,
                 LsbootSanCatSanImagePath(parent_mo_or_dn=mo[0].child[0],
                                          wwn=wwn, type=target_type, lun=lun)
                 return
-            else:
-                raise UcsOperationError(
-                    "_san_device_add", "Instance of San of type '%s' already "
-                    "added at order '%s'." %
-                    (type, mo[0].order))
-
-        if not vnic_name or not type:
-            raise UcsOperationError("_san_device_add",
-                                    "Required parameter 'vnic_name' or "
-                                    "'type' missing.")
 
         san_image = LsbootSanCatSanImage(parent_mo_or_dn=mo[0],
                                          vnic_name=vnic_name,
                                          type=type)
-        if wwn or lun:
-            if not (wwn and lun):
+        if wwn or lun or target_type:
+            if not (wwn and lun and target_type):
                 raise UcsOperationError("Required Parameter 'wwn' or "
-                                        "'lun' missing.")
+                                        "'lun' or 'target_type' missing.")
             LsbootSanCatSanImagePath(parent_mo_or_dn=san_image,
                                      wwn=wwn, type=type, lun=lun)
         return
 
     mo = LsbootSan(parent_mo_or_dn=parent_mo, order=order)
-    san_image_exist = False
     if vnic_name or type:
         if not (vnic_name and type):
             raise UcsOperationError("Required Parameter 'vnic_name' or "
@@ -433,17 +446,12 @@ def _san_device_add(parent_mo, order,
         san_image = LsbootSanCatSanImage(parent_mo_or_dn=mo,
                                          vnic_name=vnic_name,
                                          type=type)
-        san_image_exist = True
-
-    if not san_image_exist:
-        return
-
-    if wwn or lun:
-        if not (wwn and lun):
-            raise UcsOperationError("Required Parameter 'wwn' or "
-                                    "'lun' missing.")
-    LsbootSanCatSanImagePath(parent_mo_or_dn=parent_mo,
-                             wwn=wwn, type=type, lun=lun)
+        if wwn or lun or target_type:
+            if not (wwn and lun and target_type):
+                raise UcsOperationError("Required Parameter 'wwn' or "
+                                        "'lun' or 'target_type' missing.")
+            LsbootSanCatSanImagePath(parent_mo_or_dn=san_image,
+                                     wwn=wwn, type=type, lun=lun)
 
 
 def _iscsi_device_add(parent_mo, order, vnic_name):
@@ -531,7 +539,15 @@ def _local_device_add(parent_mo, device_name, device_order, **kwargs):
                         **kwargs)
         return
 
+
     class_id = _local_devices[device_name][0]
+    print class_id
+    mo = [mo for mo in parent_mo.child
+          if mo.get_class_id() == class_id]
+
+    if mo:
+        raise UcsOperationError("_local_device_add", "Device '%s' already exist at order '%s'" % (device_name, mo[0].order))
+
     class_struct = load_class(class_id)
     class_obj = class_struct(parent_mo_or_dn=parent_mo, order=device_order,
                              **kwargs)
@@ -539,9 +555,17 @@ def _local_device_add(parent_mo, device_name, device_order, **kwargs):
 
 def _vmedia_device_add(parent_mo, device_name, device_order, **kwargs):
     class_id = "LsbootVirtualMedia"
+    access=_vmedia_devices[device_name]
+
+    mo = [mo for mo in parent_mo.child
+          if mo.get_class_id() == class_id and mo.access == access]
+    if mo:
+        raise UcsOperationError("_vmedia_device_add", "Device '%s' already exist at order '%s'" % (device_name, mo[0].order))
+
+
     class_struct = load_class(class_id)
     class_obj = class_struct(parent_mo_or_dn=parent_mo,
-                             access=_vmedia_devices[device_name],
+                             access=access,
                              order=device_order, **kwargs)
 
 
