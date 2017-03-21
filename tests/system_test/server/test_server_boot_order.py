@@ -138,3 +138,6 @@ devices = [
 
 def test_boot_policy_order_set():
     boot_policy_order_set(handle, boot_policy_dn, devices)
+
+def test_boot_policy_order_exist():
+    boot_policy_order_exist(handle, boot_policy_dn, devices)
