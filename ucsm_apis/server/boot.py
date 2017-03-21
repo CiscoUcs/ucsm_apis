@@ -337,121 +337,160 @@ def _lan_device_add(parent_mo, order, vnic_name):
         type="primary")
 
 
+def _children_get(parent_mo, class_id):
+    return [mo for mo in parent_mo.child if mo.get_class_id() == class_id]
+
+def _san_add(parent_mo, order):
+    from ucsmsdk.mometa.lsboot.LsbootSan import LsbootSan
+    return LsbootSan(parent_mo_or_dn=parent_mo, order=order)
+
+def _san_image_add(parent_mo, type, vnic_name):
+    from ucsmsdk.mometa.lsboot.LsbootSanCatSanImage import \
+        LsbootSanCatSanImage
+    if not (vnic_name and type):
+        raise UcsOperationError("Required Parameter 'vnic_name' or "
+                                "'type' missing.")
+    return LsbootSanCatSanImage(parent_mo_or_dn=parent_mo,
+                                     vnic_name=vnic_name,
+                                     type=type)
+
+def _san_boot_target_add(parent_mo, target_type, wwn, lun):
+    from ucsmsdk.mometa.lsboot.LsbootSanCatSanImagePath import \
+        LsbootSanCatSanImagePath
+    if target_type or wwn or lun:
+        if not (wwn and lun and target_type):
+            raise UcsOperationError("Required Parameter 'wwn' or "
+                                    "'lun' or 'target_type' missing.")
+        return LsbootSanCatSanImagePath(parent_mo_or_dn=parent_mo,
+                                 type=target_type,
+                                 wwn=wwn,
+                                 lun=lun)
+    return None
+
+def _san_boot_target_add_validate(parent_mo, target_type, wwn, lun):
+
+        if not(target_type or wwn or lun):
+            raise UcsOperationError("_san_device_add",
+        "Instance of '%s' san image is already added." % parent_mo.type)
+
+        san_boot_targets = parent_mo.child
+        san_boot_targets_count = len(san_boot_targets)
+
+        # case3.2.1) if no boot targets added yet, add boot target
+        if san_boot_targets_count == 0:
+            _san_boot_target_add(parent_mo=parent_mo,
+                                 target_type=target_type,
+                                 wwn=wwn,
+                                 lun=lun)
+
+        # case3.2.2) if both boot targets already added, raise error
+        elif san_boot_targets_count >= 2:
+            raise UcsOperationError( "_san_device_add",
+                "Both instance of SAN target devices are already added.")
+
+        # case3.2.3) if only single boot target is added yet
+        else:
+            existing_boot_target = san_boot_targets[0]
+
+            # case3.2.3.1) if existing boot target_type == i/p target_type
+            # raise error
+            if existing_boot_target.type == target_type:
+                raise UcsOperationError("_san_device_add",
+        "Instance of SAN target type '%s' is already added." %target_type)
+
+            # case3.2.3.2) if existing boot target_type != i/p target_type
+            # add boot target of input target_type
+            _san_boot_target_add(parent_mo=parent_mo,
+                                 target_type=target_type,
+                                 wwn=wwn,
+                                 lun=lun)
+
+
 def _san_device_add(parent_mo, order,
                     vnic_name=None, type=None,
                     wwn=None, lun=None, target_type=None):
-    from ucsmsdk.mometa.lsboot.LsbootSan import LsbootSan
-    from ucsmsdk.mometa.lsboot.LsbootSanCatSanImage import \
-        LsbootSanCatSanImage
-    from ucsmsdk.mometa.lsboot.LsbootSanCatSanImagePath import \
-        LsbootSanCatSanImagePath
 
-    mo = [mo for mo in parent_mo.child if mo.get_class_id() == "LsbootSan"]
-    if mo and not mo[0].child:
-        if not (vnic_name and type):
-            raise UcsOperationError("_san_device_add",
-                                    "Instance of San device already added")
-        san_image_exist = False
+    # mo = [mo for mo in parent_mo.child if mo.get_class_id() == "LsbootSan"]
+    # Get LsbootSan
+    sans = _children_get(parent_mo, "LsbootSan")
+
+    # if lsbootSan not added yet, add it and it's respective child
+    if not sans:
+        # Add LsbootSan
+        san = _san_add(parent_mo=parent_mo, order=order)
+
+        san_image = None
         if vnic_name or type:
-            if not (vnic_name and type):
-                raise UcsOperationError("Required Parameter 'vnic_name' or "
-                                        "'type' missing.")
-            san_image = LsbootSanCatSanImage(parent_mo_or_dn=mo[0],
-                                             vnic_name=vnic_name,
-                                             type=type)
-
-            if wwn or lun or target_type:
-                if not (wwn and lun and target_type):
-                    raise UcsOperationError("Required Parameter 'wwn' or "
-                                            "'lun' or 'target_type' missing.")
-                LsbootSanCatSanImagePath(parent_mo_or_dn=san_image,
-                                         wwn=wwn, type=target_type, lun=lun)
-            return
-
-    elif mo and mo[0].child:
-        child_count = len(mo[0].child)
-        if child_count >= 2:
-            if not(wwn or lun or target_type):
-             raise UcsOperationError("_san_device_add",
-                                     "Both instance of SAN Devices are "
-                                     "already added.")
-
-            sub_child = mo[0].child[0].child
-            if sub_child:
-                sub_child_count = len(sub_child)
-                if sub_child_count >= 2:
-                    raise UcsOperationError(
-                        "_san_device_add",
-                        "Both instance of SAN target devices are already added.")
-
-                if sub_child[0].type == target_type:
-                    raise UcsOperationError(
-                        "_san_device_add",
-                        "Instance of SAN target type '%s' is already added." %
-                        target_type)
-
-                LsbootSanCatSanImagePath(parent_mo_or_dn=mo[0].child[0],
-                                         wwn=wwn, type=target_type, lun=lun)
-                return
-        if not (vnic_name and type):
-            raise UcsOperationError("_san_device_add",
-                                    "Instance of San device already added")
-        if mo[0].child[0].type == type:
-            if not (wwn and lun and target_type):
-                raise UcsOperationError("_san_device_add", "Instance of '%s' san image is already added." % type)
-
-            sub_child = mo[0].child[0].child
-            if sub_child:
-                sub_child_count = len(sub_child)
-                if sub_child_count >= 2:
-                    raise UcsOperationError(
-                        "_san_device_add",
-                        "Both instance of SAN target devices are already added.")
-
-                if sub_child[0].type == target_type:
-                    raise UcsOperationError(
-                        "_san_device_add",
-                        "Instance of SAN target type '%s' is already added." %
-                        target_type)
-
-                LsbootSanCatSanImagePath(parent_mo_or_dn=mo[0].child[0],
-                                         wwn=wwn, type=target_type, lun=lun)
-                return
-
-            if wwn or lun or target_type:
-                if not (wwn and lun and target_type):
-                    raise UcsOperationError("Required Parameter 'wwn' or "
-                                            "'lun' or 'target_type' missing.")
-                LsbootSanCatSanImagePath(parent_mo_or_dn=mo[0].child[0],
-                                         wwn=wwn, type=target_type, lun=lun)
-                return
-
-        san_image = LsbootSanCatSanImage(parent_mo_or_dn=mo[0],
-                                         vnic_name=vnic_name,
-                                         type=type)
-        if wwn or lun or target_type:
-            if not (wwn and lun and target_type):
-                raise UcsOperationError("Required Parameter 'wwn' or "
-                                        "'lun' or 'target_type' missing.")
-            LsbootSanCatSanImagePath(parent_mo_or_dn=san_image,
-                                     wwn=wwn, type=type, lun=lun)
+            san_image = _san_image_add(parent_mo=san,
+                                       type=type,
+                                       vnic_name=vnic_name)
+        if san_image:
+            _san_boot_target_add(parent_mo=san_image,
+                                 target_type=target_type,
+                                 wwn=wwn,
+                                 lun=lun)
         return
 
-    mo = LsbootSan(parent_mo_or_dn=parent_mo, order=order)
-    if vnic_name or type:
-        if not (vnic_name and type):
-            raise UcsOperationError("Required Parameter 'vnic_name' or "
-                                    "'type' missing.")
+    # elif lsbootSan is already added, check for san_images
+    san = sans[0]
+    san_images = san.child
+    san_images_count = len(san_images)
 
-        san_image = LsbootSanCatSanImage(parent_mo_or_dn=mo,
-                                         vnic_name=vnic_name,
-                                         type=type)
-        if wwn or lun or target_type:
-            if not (wwn and lun and target_type):
-                raise UcsOperationError("Required Parameter 'wwn' or "
-                                        "'lun' or 'target_type' missing.")
-            LsbootSanCatSanImagePath(parent_mo_or_dn=san_image,
-                                     wwn=wwn, type=type, lun=lun)
+    # case1)  if not (vnic and type) - raise error
+    if not (vnic_name and type):
+        raise UcsOperationError("_san_device_add",
+                                "Instance of San device is already added.")
+
+    # case2) if no san images, add san_image
+    if san_images_count == 0:
+        san_image = _san_image_add(parent_mo=san,
+                                   type=type,
+                                   vnic_name=vnic_name)
+        _san_boot_target_add(parent_mo=san_image,
+                             target_type=target_type,
+                             wwn=wwn,
+                             lun=lun)
+        return
+
+    # case3) if only one san images is already added
+    if san_images_count == 1:
+        existing_san_image = san_images[0]
+
+        # case3.1) if existing_san_image.type != input_type,
+        # add the san image of input type
+        if existing_san_image.type != type:
+            san_image = _san_image_add(parent_mo=san,
+                                       type=type,
+                                       vnic_name=vnic_name)
+            _san_boot_target_add(parent_mo=san_image,
+                                 target_type=target_type,
+                                 wwn=wwn,
+                                 lun=lun)
+            return
+
+        # case3.2) if existing_san_image.type == input_type,
+        # check for boot target
+        _san_boot_target_add_validate(parent_mo=existing_san_image,
+                                      target_type=target_type,
+                                      wwn=wwn,
+                                      lun=lun)
+        return
+
+    # case4) if both san images already added, check for boot target
+    if not (target_type and wwn and lun):
+        raise UcsOperationError("_san_device_add",
+                        "Both instance of SAN Devices are already added.")
+    if type is None:
+        raise UcsOperationError("_san_device_add",
+                        "Specify 'type' under which boot target to be added.")
+
+    san_image_to_check = [san_image for san_image in san_images
+                          if san_image.type == target_type][0]
+
+    _san_boot_target_add_validate(parent_mo=san_image_to_check,
+                                  target_type=target_type,
+                                  wwn=wwn,
+                                  lun=lun)
 
 
 def _iscsi_device_add(parent_mo, order, vnic_name):
@@ -484,28 +523,6 @@ def _iscsi_device_add(parent_mo, order, vnic_name):
                          i_scsi_vnic_name=vnic_name, type="primary")
 
 
-_class_details = {
-    "LsbootDefaultLocalImage": {
-        "props": None,
-        "sub_child": None
-    },
-    "LsbootLocalHddImage": {
-        "props": None,
-        "sub_child": "LsbootLocalLunImagePath",
-        "sub_child_props": ["lun_name", "type"],
-        "is_sub_child_needed": False
-    },
-    "LsbootLocalLunImagePath": {
-        "props": {
-            "lun_name": {"mandatory": True, "Default": None},
-            "type": {"mandatory": True, "Default": "primary",
-                     "valid_set": ["primary", "secondary"]}
-        },
-        "sub_child": None
-    }
-
-}
-
 _local_devices = {
     "local_disk": ["LsbootDefaultLocalImage", None],
     "local_lun": ["LsbootLocalHddImage", _local_lun_add],
@@ -516,6 +533,7 @@ _local_devices = {
     "embedded_lun": ["LsbootEmbeddedLocalLunImage", None],
     "embedded_disk": ["LsbootEmbeddedLocalDiskImage", _local_embedded_disk_add],
 }
+
 
 _vmedia_devices = {
     "cd_dvd": "read-only",
