@@ -46,7 +46,7 @@ _       boot_policy_get(handle,
     dn = org_dn + "/boot-policy-" + name
     mo = handle.query_dn(dn)
     if mo is None:
-        raise UcscOperationError(caller, "BootPolicy '%s' does not exist" % dn)
+        raise UcsOperationError(caller, "BootPolicy '%s' does not exist" % dn)
     return mo
 
 

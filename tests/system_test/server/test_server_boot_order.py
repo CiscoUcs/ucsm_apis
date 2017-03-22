@@ -11,22 +11,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import datetime
 from nose.tools import *
 from ..connection.info import custom_setup, custom_teardown
 from ucsmsdk.ucshandle import UcsHandle
 from ucsm_apis.server.boot import *
 
 handle = None
-boot_policy_dn = "org-root/boot-policy-test"
+boot_policy_name =  "test" + datetime.date.today().strftime('%Y%b%d')
+boot_policy_dn = "org-root/boot-policy-" + boot_policy_name
 
 def setup_module():
     global handle
     handle = custom_setup()
+    boot_policy_create(handle, name=boot_policy_name)
     # handle.set_dump_xml()
 
 
 def teardown_module():
-    custom_teardown()
+    boot_policy_delete(handle, name=boot_policy_name)
+    custom_teardown(handle)
 
 devices = [
             {"device_name": "local_lun",
