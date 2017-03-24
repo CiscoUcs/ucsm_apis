@@ -17,4 +17,4 @@ def blade_dn_get(chassis_id, blade_id):
 
 
 def rack_dn_get(rack_id):
-    return "sys/rack-" + str(rack_id)
+    return "sys/rack-unit-" + str(rack_id)
