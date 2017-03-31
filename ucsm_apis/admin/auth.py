@@ -25,7 +25,7 @@ def auth_domain_get(handle, name, caller="auth_domain_get"):
     Gets the auth domain
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name of auth domain
 
     Returns:
@@ -48,7 +48,7 @@ def auth_domain_create(handle, name, refresh_period="600",
     Adds a auth domain
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name of auth domain
         refresh_period: refresh period in seconds. Default 600.
         session_timeout: timeout in seconds. Default 7200.
@@ -82,10 +82,10 @@ def auth_domain_exists(handle, name, **kwargs):
     checks if auth domain exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name of auth domain
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -107,10 +107,10 @@ def auth_domain_modify(handle, name, **kwargs):
     Modifies a domain
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name of domain
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -136,7 +136,7 @@ def auth_domain_delete(handle, name):
     deletes a auth domain.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): auth domain name
 
     Returns:
@@ -162,7 +162,7 @@ def auth_domain_realm_configure(handle, domain_name, realm="local",
     configure realm of a auth domain.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         domain_name (string): auth domain name
         realm (string): realm ["ldap", "local", "none", "radius", "tacacs"]
                         Use "none" to disable auth
@@ -181,7 +181,7 @@ def auth_domain_realm_configure(handle, domain_name, realm="local",
         UcsOperationError: If AaaDomain is not present
 
     Example:
-        auth_domain_realm_configure(handle, domain_name="ciscoucscentral",
+        auth_domain_realm_configure(handle, domain_name="ciscoucs",
                                     realm="ldap")
     """
 
@@ -210,7 +210,7 @@ def native_auth_configure(handle, def_role_policy=None,
     configure native authentication.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         def_role_policy (string): def_role_policy
         def_login (string): def_login
         con_login (string): con_login
@@ -251,7 +251,7 @@ def native_auth_default(handle, realm=None, session_timeout=None,
     configure default native authentication.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         realm (string): realm ["ldap", "local", "none", "radius", "tacacs"]
                         Use "none" to disable auth
         session_timeout (string): session_timeout
@@ -295,7 +295,7 @@ def native_auth_console(handle, realm=None, provider_group=None,
     configure console native authentication.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         realm (string): realm ["ldap", "local", "none", "radius", "tacacs"]
                         Use "none" to disable auth
         provider_group (string): provider_group
