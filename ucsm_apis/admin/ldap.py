@@ -26,7 +26,7 @@ def ldap_configure(handle, timeout="30", attribute="CiscoAvPair",
     Configure the ldap
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         timeout (string): timeout
         attribute (string): attribute
         filter (string): filter
@@ -64,7 +64,7 @@ def ldap_provider_get(handle, name, caller="ldap_provider_get"):
     Gets the ldap provider
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name of ldap provider
 
     Returns:
@@ -90,7 +90,7 @@ def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
     creates a ldap provider
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name of ldap provider
         order (string): "lowest-available" or 0-16
         rootdn (string): rootdn
@@ -143,10 +143,10 @@ def ldap_provider_exists(handle, name, **kwargs):
     checks if ldap provider exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name of ldap provider
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -168,10 +168,10 @@ def ldap_provider_modify(handle, name, **kwargs):
     modifies a ldap provider
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name of ldap provider
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -196,7 +196,7 @@ def ldap_provider_delete(handle, name):
     deletes a ldap provider
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name of ldap provider
 
     Returns:
@@ -226,7 +226,7 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
     configures group rules of a ldap provider
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         ldap_provider_name (string): name of ldap provider
         authorization (string): authorization
         traversal (string): traversal
@@ -269,7 +269,7 @@ def ldap_group_map_create(handle, name, descr=None, **kwargs):
     creates ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
         descr (string): descr
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -296,7 +296,7 @@ def ldap_group_map_get(handle, name, caller="ldap_group_map_get"):
     Gets ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
 
     Returns:
@@ -319,10 +319,10 @@ def ldap_group_map_exists(handle, name, **kwargs):
     checks if ldap group map exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -344,7 +344,7 @@ def ldap_group_map_delete(handle, name):
     removes ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
 
     Returns:
@@ -368,7 +368,7 @@ def ldap_group_map_role_add(handle, ldap_group_map_name, name, descr=None,
     add role to ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         ldap_group_map_name (string): name of ldap group
         name (string):  role name
         descr (string): descr
@@ -400,7 +400,7 @@ def ldap_group_map_role_get(handle, ldap_group_map_name, name,
     Gets the role  for the respective ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         ldap_group_map_name (string): name of ldap group
         name (string):  role name
 
@@ -426,11 +426,11 @@ def ldap_group_map_role_exists(handle, ldap_group_map_name, name, **kwargs):
     checks if role exists for the respective ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         ldap_group_map_name (string): name of ldap group
         name (string):  role name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -455,7 +455,7 @@ def ldap_group_map_role_remove(handle, ldap_group_map_name, name):
     removes role from the respective ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         ldap_group_map_name (string): name of ldap group
         name (string):  role name
 
@@ -483,7 +483,7 @@ def ldap_group_map_locale_add(handle, ldap_group_map_name, name, descr=None,
     add locale to ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         ldap_group_map_name (string): name of ldap group
         name (string):  locale name
         descr (string): descr
@@ -520,7 +520,7 @@ def ldap_group_map_locale_get(handle, ldap_group_map_name, name,
     Gets the locale for the respective ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         ldap_group_map_name (string): name of ldap group
         name (string):  locale name
 
@@ -545,11 +545,11 @@ def ldap_group_map_locale_exists(handle, ldap_group_map_name, name, **kwargs):
     checks if locale exists for the respective ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         ldap_group_map_name (string): name of ldap group
         name (string):  locale name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -574,7 +574,7 @@ def ldap_group_map_locale_remove(handle, ldap_group_map_name, name):
     removes locale from the respective ldap group map
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         ldap_group_map_name (string): name of ldap group
         name (string):  locale name
 
@@ -605,7 +605,7 @@ def ldap_provider_group_create(handle, name, descr=None, **kwargs):
     creates ldap provider group
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
         descr (string): descr
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -635,7 +635,7 @@ def ldap_provider_group_get(handle, name, caller="ldap_provider_group_get"):
     Gets ldap provider group
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
 
     Returns:
@@ -657,10 +657,10 @@ def ldap_provider_group_exists(handle, name, **kwargs):
     checks if ldap provider group exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -683,7 +683,7 @@ def ldap_provider_group_delete(handle, name):
     deletes ldap provider group
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
         descr (string): descr
 
@@ -710,7 +710,7 @@ def ldap_provider_group_provider_add(handle, group_name, name,
     adds provider to ldap provider group
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         group_name (string): ldap provider group name
         name (string): name
         order (string): order
@@ -733,13 +733,13 @@ def ldap_provider_group_provider_add(handle, group_name, name,
 
     from ucsmsdk.mometa.aaa.AaaProviderRef import AaaProviderRef
 
-    group_dn = ucsc_base_dn + "/ldap-ext/providergroup-" + group_name
+    group_dn = _base_dn + "/ldap-ext/providergroup-" + group_name
     group_mo = handle.query_dn(group_dn)
     if not group_mo:
         raise UcsOperationError("ldap_provider_group_provider_add",
                                  "Ldap Provider Group does not exist.")
 
-    provider_dn = ucsc_base_dn + "/ldap-ext/provider-" + name
+    provider_dn = _base_dn + "/ldap-ext/provider-" + name
     provider_mo = handle.query_dn(provider_dn)
     if not provider_mo:
         raise UcsOperationError("ldap_provider_group_provider_add",
@@ -763,7 +763,7 @@ def ldap_provider_group_provider_get(handle, group_name, name,
     Gets provider for ldap provider group
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         group_name (string): ldap provider group name
         name (string): name
 
@@ -790,11 +790,11 @@ def ldap_provider_group_provider_exists(handle, group_name, name, **kwargs):
     checks if provider added ldap provider group
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         group_name (string): ldap provider group name
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -820,11 +820,11 @@ def ldap_provider_group_provider_modify(handle, group_name, name, **kwargs):
     modify provider of ldap provider group
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         group_name (string): ldap provider group name
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -853,7 +853,7 @@ def ldap_provider_group_provider_remove(handle, group_name, name):
     removes provider from ldap provider group
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         group_name (string): ldap provider group name
         name (string): name
 

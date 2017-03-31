@@ -14,7 +14,7 @@
 """
 This module performs the operation related to role.
 """
-from ucscsdk.ucscexception import UcscOperationError
+from ucsmsdk.ucsexception import UcsOperationError
 
 _base_dn = "sys/user-ext"
 
@@ -23,7 +23,7 @@ def role_create(handle, name, priv, descr=None, **kwargs):
     creates a role
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): role name
         priv (comma separated string): role privilege
         descr (string): descr
@@ -37,7 +37,7 @@ def role_create(handle, name, priv, descr=None, **kwargs):
         role_create(handle, name="test_role", priv="admin")
 
     """
-    from ucscsdk.mometa.aaa.AaaRole import AaaRole
+    from ucsmsdk.mometa.aaa.AaaRole import AaaRole
 
     mo = AaaRole(parent_mo_or_dn=_base_dn,
                  name=name,
@@ -54,7 +54,7 @@ def role_get(handle, name, caller="role_get"):
     Gets a role
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): role name
 
     Returns:
@@ -76,10 +76,10 @@ def role_exists(handle, name, **kwargs):
     checks if a role exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): role name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -101,17 +101,17 @@ def role_modify(handle, name, **kwargs):
     modifies role
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): role name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
         AaaRole: Managed Object
 
     Raises:
-        UcscOperationError: If AaaRole is not present
+        UcsOperationError: If AaaRole is not present
 
     Example:
         role_modify(handle, name="test_role", priv="read-only")
@@ -129,14 +129,14 @@ def role_delete(handle, name):
     deletes role
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): role name
 
     Returns:
         None
 
     Raises:
-        UcscOperationError: If AaaRole is not present
+        UcsOperationError: If AaaRole is not present
 
     Example:
         role_delete(handle, name="test_role")

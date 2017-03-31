@@ -33,7 +33,7 @@ def snmp_enable(handle, community=None, sys_contact=None, sys_location=None,
     Enables SNMP.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         community (string): community
         sys_contact (string): sys_contact
         sys_location (string): sys_location
@@ -80,7 +80,7 @@ def snmp_disable(handle):
     Disables SNMP.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
 
     Returns:
         CommSnmp: Managed Object
@@ -107,7 +107,7 @@ def snmp_trap_add(handle, hostname, community, port="162", version="v2c",
     Adds snmp trap.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         hostname (string): ip address
         community (string): community
         port (number): port
@@ -152,7 +152,7 @@ def snmp_trap_get(handle, hostname, caller="snmp_trap_get"):
     Gets snmp trap
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         hostname (string): ip address
 
     Returns:
@@ -175,10 +175,10 @@ def snmp_trap_exists(handle, hostname, **kwargs):
     checks if snmp trap exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         hostname (string): ip address
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -204,10 +204,10 @@ def snmp_trap_modify(handle, hostname, **kwargs):
     Modifies snmp trap.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         hostname (string): ip address
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -237,7 +237,7 @@ def snmp_trap_remove(handle, hostname):
     Modifies snmp trap.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         hostname (string): ip address
 
     Returns:
@@ -262,7 +262,7 @@ def snmp_user_add(handle, name, pwd, privpwd, auth="md5",
     Adds snmp user.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): snmp username
         descr (string): description
         pwd (string): password
@@ -303,7 +303,7 @@ def snmp_user_get(handle, name, caller="snmp_user_get"):
     Gets snmp user.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): snmp username
 
     Returns:
@@ -326,10 +326,10 @@ def snmp_user_exists(handle, name, **kwargs):
     checks if snmp user exists.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): snmp username
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -353,10 +353,10 @@ def snmp_user_modify(handle, name, **kwargs):
     Modifies snmp user.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): snmp username
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -384,7 +384,7 @@ def snmp_user_remove(handle, name):
     removes snmp user.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): snmp username
 
     Returns:

@@ -22,7 +22,7 @@ def syslog_local_console_enable(handle, severity="emergencies", **kwargs):
     This method enables system logs on local console.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         severity (string): Level of logging.
                         ["emergencies","alerts", "critical"]
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -61,7 +61,7 @@ def syslog_local_console_disable(handle):
     This method disables system logs on local console.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
 
     Returns:
         CommSyslogConsole: Managed Object
@@ -76,7 +76,7 @@ def syslog_local_console_disable(handle):
     from ucsmsdk.mometa.comm.CommSyslogConsole import \
         CommSyslogConsoleConsts
 
-    dn = ucsc_base_dn + "/console"
+    dn = _base_dn + "/console"
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_console_disable",
@@ -93,7 +93,7 @@ def syslog_local_monitor_enable(handle, severity="emergencies", **kwargs):
     This method enables logs on local monitor.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         severity (string): Level of logging.
                         ["alerts", "critical", "debugging", "emergencies",
                         "errors", "information", "notifications", "warnings"]
@@ -133,7 +133,7 @@ def syslog_local_monitor_disable(handle):
     This method disables logs on local monitor.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
 
     Returns:
         CommSyslogMonitor: Managed Object
@@ -167,7 +167,7 @@ def syslog_local_file_enable(handle, name=None, severity="emergencies",
     This method configures System Logs on local file storage.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): Name of Log file.
         severity (string): Level of logging.
                         ["alerts", "critical", "debugging", "emergencies",
@@ -214,7 +214,7 @@ def syslog_local_file_disable(handle):
     This method disables System Logs on local file storage.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
 
     Returns:
         CommSyslogFile: Managed Object
@@ -247,7 +247,7 @@ def syslog_remote_enable(handle, name, hostname="none",
     This method enables System Logs on remote server.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): Remote Server ID -
                             "primary" or "secondary" or "tertiary"
         hostname (string) : Remote host IP or Name
@@ -296,7 +296,7 @@ def syslog_remote_disable(handle, name):
     This method enables System Logs on remote server.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): Remote Server ID -
                             "primary" or "secondary" or "tertiary"
 
@@ -330,7 +330,7 @@ def syslog_source(handle, faults=None, audits=None, events=None, **kwargs):
     This method configures Type of System Logs.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         faults (string) : for fault logging. ["disabled", "enabled"]
         audits (string): for audit task logging. ["disabled", "enabled"]
         events (string): for event logging. ["disabled", "enabled"]

@@ -40,7 +40,7 @@ def call_home_enable(handle, alert_throttling_admin_state="on",
 
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         alert_throttling_admin_state (string): "on" or "off"
         name (string): name
         descr (string): description
@@ -79,7 +79,7 @@ def call_home_contact_update(handle, contact=None, phone=None, email=None,
     Configures call home
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         contact (string): Contact Name
         phone (string): phone number e.g. +91-1234567890
         email (string): contact email address
@@ -166,7 +166,7 @@ def call_home_disable(handle):
     Disables call home alert.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
 
     Returns:
         CallhomeEp : ManagedObject

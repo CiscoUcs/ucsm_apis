@@ -19,7 +19,7 @@ def time_zone_set(handle, timezone, **kwargs):
     This method sets the timezone of the UCS Central.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         timezone (string): time zone e.g. "Asia/Kolkata"
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
@@ -58,7 +58,7 @@ def ntp_server_add(handle, name, descr=None, **kwargs):
     Adds NTP server using IP address.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): NTP server IP address or Name
         descr (string): Basic description about NTP server
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -89,7 +89,7 @@ def ntp_server_get(handle, name, caller="ntp_server_get"):
     Gets ntp server
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): NTP server IP address or Name
 
     Returns:
@@ -111,10 +111,10 @@ def ntp_server_exists(handle, name, **kwargs):
     checks if ntp server exists.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): NTP server IP address or Name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -136,7 +136,7 @@ def ntp_server_remove(handle, name):
     Removes the NTP server.
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name : NTP server IP address or Name
 
     Returns:

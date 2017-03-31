@@ -122,7 +122,7 @@ def user_exists(handle, name, **kwargs):
         handle (UcsHandle)
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -153,7 +153,7 @@ def user_modify(handle, name, **kwargs):
         handle (UcsHandle)
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -268,7 +268,7 @@ def user_role_exists(handle, user_name, name, **kwargs):
         user_name (string): username
         name (string): rolename
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -374,7 +374,7 @@ def user_locale_exists(handle, user_name, name, **kwargs):
         user_name (string): username
         name (string): locale name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:

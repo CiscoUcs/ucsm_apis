@@ -26,7 +26,7 @@ def key_ring_create(handle, name, modulus="mod2048", regen="no",
     Creates a key ring
 
     Args:
-        handle (ucschandle)
+        handle (ucshandle)
         name (string): name
         descr (string): description
         tp (string): tp
@@ -66,7 +66,7 @@ def key_ring_get(handle, name, caller="key_ring_get"):
     Gets the key ring
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
 
     Returns:
@@ -89,10 +89,10 @@ def key_ring_exists(handle, name, **kwargs):
     Checks if a key ring exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -114,10 +114,10 @@ def key_ring_modify(handle, name, **kwargs):
     Modifies a key ring
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -142,7 +142,7 @@ def key_ring_delete(handle, name):
     Deletes a key ring
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): name
 
     Returns:
@@ -170,7 +170,7 @@ def certificate_request_add(handle, name,
     Adds a certificate request to keyring
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): KeyRing name
         ip (string): ipv4
         ip_a (string):
@@ -233,7 +233,7 @@ def certificate_request_get(handle, name, caller="certificate_request_get"):
     Checks if a certificate request exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): KeyRing name
 
     Returns:
@@ -258,10 +258,10 @@ def certificate_request_exists(handle, name, **kwargs):
     Checks if a certificate request exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): KeyRing name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -291,7 +291,7 @@ def certificate_request_remove(handle, name):
     Removes a certificate request from keyring
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): KeyRing name
 
     Returns:
@@ -319,7 +319,7 @@ def trusted_point_create(handle, name, policy_owner="local",
     Creates a trusted point
 
     Args:
-        handle (ucschandle)
+        handle (ucshandle)
         name (string): name
         descr (string): description
         cert_chain (string): chain of certificate
@@ -352,7 +352,7 @@ def trusted_point_get(handle, name, caller="trusted_point_get"):
     Checks if a trusted point exists
 
     Args:
-        handle (ucschandle)
+        handle (ucshandle)
         name (string): name
 
     Returns:
@@ -374,10 +374,10 @@ def trusted_point_exists(handle, name, **kwargs):
     Checks if a trusted point exists
 
     Args:
-        handle (ucschandle)
+        handle (ucshandle)
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -399,10 +399,10 @@ def trusted_point_modify(handle, name, **kwargs):
     Modifies a trusted point
 
     Args:
-        handle (ucschandle)
+        handle (ucshandle)
         name (string): name
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -428,7 +428,7 @@ def trusted_point_delete(handle, name):
     Deletes a truted point
 
     Args:
-        handle (ucschandle)
+        handle (ucshandle)
         name (string): name
 
     Returns:
