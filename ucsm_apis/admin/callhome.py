@@ -210,6 +210,7 @@ def call_home_profile_create(handle, name, format="xml", level="debug",
 
 def call_home_profile_get(handle, name, caller="call_home_profile_get"):
     dn = _base_dn + "/profile-" + name
+    mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller,
                                 "Callhome Profile '%s' does not exist" % dn)
