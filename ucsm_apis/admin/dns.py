@@ -15,17 +15,15 @@
 This module performs the operation related to dns server management.
 """
 from ucsmsdk.ucsexception import UcsOperationError
-from ..common.utils import get_device_profile_dn
-ucsc_base_dn = get_device_profile_dn(name="default")
 
-_dns_server_parent_dn = "sys/svc-ext/dns-svc"
+_dns_svc_dn = "sys/svc-ext/dns-svc"
 
 def dns_server_get(handle, name, caller="dns_server_get"):
     """
     Gets the dns entry
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): IP address of the dns server
 
     Returns:
@@ -47,7 +45,7 @@ def dns_server_add(handle, name, descr=None, **kwargs):
     Adds a dns server
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         descr (string): description
         name (string): IP Address of dns server
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -78,10 +76,10 @@ def dns_server_exists(handle, name, **kwargs):
     Checks if the dns entry already exists
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): IP address of the dns server
         **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -103,7 +101,7 @@ def dns_server_modify(handle, name, **kwargs):
     Modifies a dns server
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): IP Address of the dns server
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
@@ -130,7 +128,7 @@ def dns_server_remove(handle, name):
     Removes a dns server
 
     Args:
-        handle (UcscHandle)
+        handle (UcsHandle)
         name (string): IP Address of the dns server
 
     Returns:
