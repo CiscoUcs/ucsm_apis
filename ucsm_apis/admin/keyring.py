@@ -27,23 +27,29 @@ def key_ring_create(handle, name, modulus="mod2048", regen="no",
 
     Args:
         handle (ucshandle)
-        name (string): name
-        descr (string): description
-        tp (string): tp
-        cert (string): certificate
+        name (string): name of key ring
+        modulus (string): modulus
+         valid values are "mod2048", "mod2560", "mod3072", "mod3584",
+          "mod4096", "modinvalid"
         regen (string): regen, "false", "no", "true", "yes"
-        modulus (string): modulus, valid values are
-            "mod2048", "mod2560", "mod3072", "mod3584", "mod4096", "modinvalid"
+        policy_owner (string): policy owner
+         valid values are "local", "pending-policy", "policy"
+        tp (string): trusted point name
+        cert (string): certificate text
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
         PkiKeyRing: managed object
+
+    Raises:
+        None
 
     Example:
         key_ring = key_ring_create(handle, name="mykeyring", regen="yes")
     """
-
     from ucsmsdk.mometa.pki.PkiKeyRing import PkiKeyRing
 
     mo = PkiKeyRing(parent_mo_or_dn=_keyring_base_dn,
@@ -67,20 +73,23 @@ def key_ring_get(handle, name, caller="key_ring_get"):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): name of key ring
+        caller (string): name of the caller function
 
     Returns:
-        PkiKeyRing: managed object OR None
+        PkiKeyRing: Managed Object
+
+    Raises:
+        UcsOperationError: if PkiKeyRing is not present
 
     Example:
         key_ring = key_ring_get(handle, name="mykeyring")
     """
-
     dn = _keyring_base_dn + "/keyring-" + name
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller,
-                                "Ldap Provider '%s' does not exist" % dn)
+                                "Key Ring '%s' does not exist" % dn)
     return mo
 
 
@@ -90,13 +99,16 @@ def key_ring_exists(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): name of key ring
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, PkiKeyRing MO/None)
+
+    Raises:
+        None
 
     Example:
         key_ring = key_ring_exists(handle, name="mykeyring")
@@ -127,9 +139,8 @@ def key_ring_modify(handle, name, **kwargs):
         UcsOperationError: if PkiKeyRing is not present
 
     Example:
-        key_ring = key_ring_modify(handle, name="test_kr", regen="no")
+        key_ring = key_ring_modify(handle, name="mykeyring", regen="no")
     """
-
     mo = key_ring_get(handle, name, caller="key_ring_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
@@ -146,47 +157,46 @@ def key_ring_delete(handle, name):
         name (string): name
 
     Returns:
-        none
+        None
 
     Raises:
-        UcsOperationError: if pkikeyring mo is not present
+        UcsOperationError: if PkiKeyRing is not present
 
     Example:
         key_ring_delete(handle, name="mykeyring")
     """
-
     mo = key_ring_get(handle, name, caller="key_ring_delete")
     handle.remove_mo(mo)
     handle.commit()
 
 
-def certificate_request_add(handle, name,
+def certificate_request_create(handle, name,
                             ip="0.0.0.0", ip_a="0.0.0.0", ip_b="0.0.0.0",
                             ipv6="::", ipv6_a="::", ipv6_b="::", dns=None,
                             locality=None, state=None, country=None,
                             org_name=None, org_unit_name=None, subj_name=None,
                             email=None, pwd=None, **kwargs):
     """
-    Adds a certificate request to keyring
+    Creates a certificate request for keyring
 
     Args:
         handle (UcsHandle)
         name (string): KeyRing name
-        ip (string): ipv4
-        ip_a (string):
-        ip_b (string):
-        ipv6 (string):
-        ipv6_a (string):
-        ipv6_b (string):
-        dns (string): dns
-        locality (string): locality owner
+        ip (string): ipv4,  ip address
+        ip_a (string): ipv4, fi-a ip address
+        ip_b (string): ipv4, fi-b ip address
+        ipv6 (string): ipv6, ip address
+        ipv6_a (string): ipv6, fi-a ip address
+        ipv6_b (string): ipv6, fi-b ip address
+        dns (string): dns server
+        locality (string): locality
         state (string): state
         country (string): country
-        org_name (string): org_name
-        org_unit_name (string): org_unit_name
-        subj_name (string): subj_name
+        org_name (string): organization name
+        org_unit_name (string): organization unit name
+        subj_name (string): subject
         email (string): email
-        pwd (string): pwd
+        pwd (string): password
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
@@ -197,29 +207,18 @@ def certificate_request_add(handle, name,
         UcsOperationError: If PkiKeyRing is not present
 
     Example:
-        certificate_request_add(handle, name="test_kr", dns="10.10.10.100",
+        certificate_request_create(handle, name="mykeyring", dns="10.10.10.100",
                                 country="IN")
     """
-
     from ucsmsdk.mometa.pki.PkiCertReq import PkiCertReq
 
-    obj = key_ring_get(handle, name, caller="certificate_request_add")
-    mo = PkiCertReq(parent_mo_or_dn=obj,
-                    dns=dns,
-                    ip=ip,
-                    ip_a=ip_a,
-                    ip_b=ip_b,
-                    ipv6=ipv6,
-                    ipv6_a=ipv6_a,
-                    ipv6_b=ipv6_b,
-                    locality=locality,
-                    state=state,
-                    country=country,
-                    org_name=org_name,
-                    org_unit_name=org_unit_name,
-                    subj_name=subj_name,
-                    email=email,
-                    pwd=pwd
+    obj = key_ring_get(handle, name, caller="certificate_request_create")
+    mo = PkiCertReq(parent_mo_or_dn=obj, dns=dns,
+                    ip=ip, ip_a=ip_a, ip_b=ip_b,
+                    ipv6=ipv6, ipv6_a=ipv6_a, ipv6_b=ipv6_b,
+                    locality=locality, state=state, country=country,
+                    org_name=org_name, org_unit_name=org_unit_name,
+                    subj_name=subj_name, email=email, pwd=pwd
                     )
 
     mo.set_prop_multiple(**kwargs)
@@ -230,21 +229,22 @@ def certificate_request_add(handle, name,
 
 def certificate_request_get(handle, name, caller="certificate_request_get"):
     """
-    Checks if a certificate request exists
+    Gets a certificate request
 
     Args:
         handle (UcsHandle)
         name (string): KeyRing name
+        caller (string): name of the caller function
 
     Returns:
-        PkiCertReq: Managed object OR None
+        PkiCertReq: Managed Object
+
+    Raises:
+        UcsOperationError: if PkiCertReq is not present
 
     Example:
-        key_ring = key_ring_create(handle, name="mykeyring")
-
-        certificate_request_get(handle, key_ring="keyring")
+        certificate_request_get(handle, name="mykeyring")
     """
-
     dn = _keyring_base_dn + "/keyring-" + name + "/certreq"
     mo = handle.query_dn(dn)
     if mo is None:
@@ -265,12 +265,13 @@ def certificate_request_exists(handle, name, **kwargs):
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, PkiCertReq MO/None)
+
+    Raises:
+        None
 
     Example:
-        key_ring = key_ring_create(handle, name="mykeyring")
-
-        certificate_request_exists(handle, key_ring="keyring")
+        certificate_request_exists(handle, name="mykeyring")
     """
     try:
         mo = certificate_request_get(handle, name,
@@ -286,9 +287,9 @@ Note: certificate_request_modify is not possible
 '''
 
 
-def certificate_request_remove(handle, name):
+def certificate_request_delete(handle, name):
     """
-    Removes a certificate request from keyring
+    Deletes a certificate request from keyring
 
     Args:
         handle (UcsHandle)
@@ -301,14 +302,11 @@ def certificate_request_remove(handle, name):
         UcsOperationError: If PkiCertReq is not present
 
     Example:
-        key_ring = key_ring_create(handle, name="mykeyring")
-
-        certificate_request_remove(handle, key_ring=key_ring)
+        certificate_request_delete(handle, name="mykeyring")
 
     """
-
     mo = certificate_request_get(handle, name,
-                                 caller="certificate_request_remove")
+                                 caller="certificate_request_delete")
     handle.remove_mo(mo)
     handle.commit()
 
@@ -320,7 +318,7 @@ def trusted_point_create(handle, name, policy_owner="local",
 
     Args:
         handle (ucshandle)
-        name (string): name
+        name (string): trusted point name
         descr (string): description
         cert_chain (string): chain of certificate
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -329,10 +327,12 @@ def trusted_point_create(handle, name, policy_owner="local",
     Returns:
         PkiTP: managed object
 
+    Raises:
+        None
+
     Example:
         trusted_point = trusted_point_create(handle, name="mytrustedpoint")
     """
-
     from ucsmsdk.mometa.pki.PkiTP import PkiTP
 
     mo = PkiTP(parent_mo_or_dn=_tp_base_dn,
@@ -349,14 +349,18 @@ def trusted_point_create(handle, name, policy_owner="local",
 
 def trusted_point_get(handle, name, caller="trusted_point_get"):
     """
-    Checks if a trusted point exists
+    Gets trusted point
 
     Args:
         handle (ucshandle)
-        name (string): name
+        name (string): trusted point name
+        caller (string): name of the caller function
 
     Returns:
-        PkiTP: managed object OR None
+        PkiTP: managed object
+
+    Raises:
+        UcsOperationError: if PkiTP is not present
 
     Example:
         key_ring = trusted_point_get(handle, name="mytrustedpoint")
@@ -375,16 +379,16 @@ def trusted_point_exists(handle, name, **kwargs):
 
     Args:
         handle (ucshandle)
-        name (string): name
+        name (string): trusted point name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, PkiTP MO/None)
 
     Example:
-        key_ring = trusted_point_exists(handle, name="mytrustedpoint")
+        trusted_point_exists(handle, name="mytrustedpoint")
     """
     try:
         mo = trusted_point_get(handle, name, caller="trusted_point_exists")
@@ -400,7 +404,7 @@ def trusted_point_modify(handle, name, **kwargs):
 
     Args:
         handle (ucshandle)
-        name (string): name
+        name (string): trusted point name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
@@ -409,13 +413,12 @@ def trusted_point_modify(handle, name, **kwargs):
         PkiTP object
 
     Raises:
-        UcsOperationError: if PkiTP not present
+        UcsOperationError: if PkiTP is not present
 
     Example:
         trusted_point = trusted_point_modify(handle, name="test_tp",
                                              descr="testing tp")
     """
-
     mo = trusted_point_get(handle, name, caller="trusted_point_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
@@ -435,12 +438,12 @@ def trusted_point_delete(handle, name):
         None
 
     Raises:
-        UcsOperationError: if PkiTP mo is not present
+        UcsOperationError: if PkiTP is not present
 
     Example:
         trusted_point_delete(handle, name="mytrustedpoint")
     """
-
     mo = trusted_point_get(handle, name, caller="trusted_point_delete")
     handle.remove_mo(mo)
     handle.commit()
+
