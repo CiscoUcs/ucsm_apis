@@ -10,55 +10,56 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """
 This module performs the operation related to dns server management.
 """
 from ucsmsdk.ucsexception import UcsOperationError
 
-_base_dn = "sys/tacacs-ext"
-
+_tacacs_dn = "sys/tacacs-ext"
 
 def tacacsplus_provider_create(handle, name, order="lowest-available",
-                               key=None, port="49", timeout="5", retries="1",
-                               enc_key=None, descr=None, **kwargs):
+                               port="49", timeout="5", retries="1",
+                               key=None, enc_key=None, descr=None, **kwargs):
     """
-    Creates a tacacsplus provider
+    creates a tacacsplus provider
 
     Args:
         handle (UcsHandle)
-        name (string): name of tacacsplus provider
+        name (string): tacacsplus provider name
         order (string): order
-        key (string): key
+         valid values are "lowest-available" or "0-16"
         port (string): port
         timeout (string): timeout
         retries (string): retries
+        key (string): key
         enc_key (string): enc_key
-        descr (string): descr
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaTacacsPlusProvider: Managed Object
+        AaaTacacsPlusProvider: managed object
+
+    Raises:
+        None
 
     Example:
         tacacsplus_provider_create(
           handle, name="test_tacac_prov", port="320", timeout="10")
     """
-
     from ucsmsdk.mometa.aaa.AaaTacacsPlusProvider import \
         AaaTacacsPlusProvider
 
-    mo = AaaTacacsPlusProvider(
-        parent_mo_or_dn=_base_dn,
-        name=name,
-        order=order,
-        key=key,
-        port=port,
-        timeout=timeout,
-        retries=retries,
-        enc_key=enc_key,
-        descr=descr)
+    mo = AaaTacacsPlusProvider(parent_mo_or_dn=_tacacs_dn,
+                               name=name,
+                               order=order,
+                               port=port,
+                               timeout=timeout,
+                               retries=retries,
+                               key=key,
+                               enc_key=enc_key,
+                               descr=descr)
 
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, True)
@@ -68,20 +69,23 @@ def tacacsplus_provider_create(handle, name, order="lowest-available",
 
 def tacacsplus_provider_get(handle, name, caller="tacacsplus_provider_get"):
     """
-    Gets tacacsplus provider
+    gets tacacsplus provider
 
     Args:
         handle (UcsHandle)
-        name (string): name of tacacsplus provider
+        name (string): tacacsplus provider name
+        caller (string): name of the caller function
 
     Returns:
-        AaaTacacsPlusProvider: Managed Object OR None
+        AaaTacacsPlusProvider: managed object
+
+    Raises:
+        UcsOperationError: if AaaTacacsPlusProvider is not present
 
     Example:
         tacacsplus_provider_get(handle, name="test_tacac_prov")
     """
-
-    dn = _base_dn + "/provider-" + name
+    dn = _tacacs_dn + "/provider-" + name
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller,
@@ -95,12 +99,16 @@ def tacacsplus_provider_exists(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name of tacacsplus provider
+        name (string): tacacsplus provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
+
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaTacacsPlusProvider MO/None)
+
+    Raises:
+        None
 
     Example:
         tacacsplus_provider_exists(handle, name="test_tacac_prov", port="320")
@@ -120,23 +128,23 @@ def tacacsplus_provider_modify(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name of tacacsplus provider
+        name (string): tacacsplus provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        AaaTacacsPlusProvider: Managed Object
+        AaaTacacsPlusProvider: managed object
 
     Raises:
-        UcsOperationError: If AaaTacacsPlusProvider is not present
+        UcsOperationError: if AaaTacacsPlusProvider is not present
 
     Example:
         tacacsplus_provider_modify(handle, "test_tacac_prov", timeout="5")
     """
-
     mo = tacacsplus_provider_get(handle, name,
                                  caller="tacacsplus_provider_modify")
+
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
@@ -149,18 +157,17 @@ def tacacsplus_provider_delete(handle, name):
 
     Args:
         handle (UcsHandle)
-        name (string): name of tacacsplus provider
+        name (string): tacacsplus provider name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaTacacsPlusProvider is not present
+        UcsOperationError: if AaaTacacsPlusProvider is not present
 
     Example:
         tacacsplus_provider_delete(handle, name="test_tacac_prov")
     """
-
     mo = tacacsplus_provider_get(handle, name,
                                  caller="tacacsplus_provider_delete")
     handle.remove_mo(mo)
@@ -169,24 +176,28 @@ def tacacsplus_provider_delete(handle, name):
 
 def tacacsplus_provider_group_create(handle, name, descr=None, **kwargs):
     """
-    Creates a tacacsplus provider group
+    creates a tacacsplus provider group
 
     Args:
         handle (UcsHandle)
-        name (string): name of tacacsplus provider group
-        descr (string): descr
+        name (string): tacacsplus provider group name
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaTacacsPlusProvider: Managed Object
+        AaaProviderGroup: managed object
+
+    Raises:
+        None
 
     Example:
-        tacacsplus_provider_create(handle, name="test_prov_grp")
+        tacacsplus_provider_group_create(handle, name="test_prov_grp")
     """
     from ucsmsdk.mometa.aaa.AaaProviderGroup import AaaProviderGroup
 
-    mo = AaaProviderGroup(parent_mo_or_dn=_base_dn, name=name, descr=descr)
+    mo = AaaProviderGroup(parent_mo_or_dn=_tacacs_dn, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, True)
     handle.commit()
@@ -196,20 +207,23 @@ def tacacsplus_provider_group_create(handle, name, descr=None, **kwargs):
 def tacacsplus_provider_group_get(handle, name,
                                   caller="tacacsplus_provider_group_get"):
     """
-    Gets tacacsplus provider group
+    gets tacacsplus provider group
 
     Args:
         handle (UcsHandle)
-        name (string): name of tacacsplus provider group
+        name (string): tacacsplus provider group name
+        caller (string): name of the caller function
 
     Returns:
-        AaaTacacsPlusProvider: Managed Object OR None
+        AaaProviderGroup: managed object
+
+    Raises:
+        UcsOperationError: if AaaProviderGroup is not present
 
     Example:
         tacacsplus_provider_group_get(handle, name="test_prov_grp")
     """
-
-    dn = _base_dn + "/providergroup-" + name
+    dn = _tacacs_dn + "/providergroup-" + name
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller,
@@ -223,13 +237,16 @@ def tacacsplus_provider_group_exists(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name of tacacsplus provider group
+        name (string): tacacsplus provider group name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaProviderGroup MO/None)
+
+    Raises:
+        None
 
     Example:
         tacacsplus_provider_group_exists(handle, name="test_prov_grp")
@@ -249,13 +266,13 @@ def tacacsplus_provider_group_delete(handle, name):
 
     Args:
         handle (UcsHandle)
-        name (string): name of tacacsplus provider group
+        name (string): tacacsplus provider group name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaProviderGroup is not present
+        UcsOperationError: if AaaProviderGroup is not present
 
     Example:
         tacacsplus_provider_group_delete(handle, name="test_prov_grp")
@@ -270,37 +287,39 @@ def tacacsplus_provider_group_provider_add(handle, group_name, name,
                                            order="lowest-available",
                                            descr=None, **kwargs):
     """
-    adds a tacacsplus provider to a tacacsplus provider  group
+    adds a tacacsplus provider to a tacacsplus provider group
 
     Args:
         handle (UcsHandle)
-        group_name (string): name of tacacsplus provider group
+        group_name (string): tacacsplus provider group name
+        name (string): tacacsplus provider name
         order (string): order
-        name (string): name of tacacsplus provider
-        descr (string): descr
+         valid values are "lowest-available" or "0-16"
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaProviderRef: Managed Object
+        AaaProviderRef: managed object
 
     Raises:
-        UcsOperationError: If AaaProviderGroup Or AaaProvider is not present
+        UcsOperationError: if AaaProviderGroup Or AaaProvider is not present
 
     Example:
         tacacsplus_provider_group_provider_add(handle,
-                                    group_name="test_prov_grp",
-                                    name="test_tacac_prov")
+                                               group_name="test_prov_grp",
+                                               name="test_tacac_prov")
     """
-
     from ucsmsdk.mometa.aaa.AaaProviderRef import AaaProviderRef
 
-    provider_group = tacacsplus_provider_group_get(handle, group_name,
-                            caller="tacacsplus_provider_group_provider_add")
-    provider = tacacsplus_provider_get(handle, name,
+    tacacsplus_provider = tacacsplus_provider_get(handle, name,
                             caller="tacacsplus_provider_group_provider_add")
 
-    mo = AaaProviderRef(parent_mo_or_dn=provider_group,
+    tacacsplus_provider_group = tacacsplus_provider_group_get(handle,
+                group_name, caller="tacacsplus_provider_group_provider_add")
+
+    mo = AaaProviderRef(parent_mo_or_dn=tacacsplus_provider_group,
                         name=name,
                         order=order,
                         descr=descr)
@@ -314,33 +333,31 @@ def tacacsplus_provider_group_provider_add(handle, group_name, name,
 def tacacsplus_provider_group_provider_get(handle, group_name, name,
                             caller="tacacsplus_provider_group_provider_get"):
     """
-    checks if a tacacsplus provider added to a tacacsplus provider  group
+    checks if a tacacsplus provider added to a tacacsplus provider group
 
     Args:
         handle (UcsHandle)
-        group_name (string): name of tacacsplus provider group
-        name (string): name of tacacsplus provider
+        group_name (string): tacacsplus provider group name
+        name (string): tacacsplus provider name
+        caller (string): name of the caller function
 
     Returns:
-        AaaProviderRef: Managed Object OR None
+        AaaProviderRef: managed object
 
     Raises:
-        UcsOperationError: If AaaProviderGroup is not present
+        UcsOperationError: if AaaProviderRef is not present
 
     Example:
         tacacsplus_provider_group_provider_get(handle,
                                     group_name="test_prov_grp",
                                     name="test_tacac_prov")
     """
-    provider_group = tacacsplus_provider_group_get(handle, group_name,
-                            caller="tacacsplus_provider_group_provider_get")
-
-    provider_dn = provider_group.dn + "/provider-ref-" + name
+    provider_group_dn = _tacacs_dn + "/providergroup-" + group_name
+    provider_ref_dn = provider_group_dn + "/provider-ref-" + name
     mo = handle.query_dn(provider_dn)
     if mo is None:
         raise UcsOperationError(caller,
-                    "Tacacsplus Provider '%s' is not present under group " % (
-                    dn, provider_group.dn))
+        "Tacacsplus Provider Reference '%s' does not exist" % provider_ref_dn)
     return mo
 
 
@@ -351,22 +368,22 @@ def tacacsplus_provider_group_provider_exists(handle, group_name, name,
 
     Args:
         handle (UcsHandle)
-        group_name (string): name of tacacsplus provider group
-        name (string): name of tacacsplus provider
+        group_name (string): tacacsplus provider group name
+        name (string): tacacsplus provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False,  AaaProviderRef MO/None)
 
     Raises:
-        UcsOperationError: If AaaProviderGroup is not present
+        None
 
     Example:
         tacacsplus_provider_group_provider_exists(handle,
-                                    group_name="test_prov_grp",
-                                    name="test_tacac_prov")
+                                                  group_name="test_prov_grp",
+                                                  name="test_tacac_prov")
     """
     try:
         mo = tacacsplus_provider_group_provider_get(handle, group_name, name,
@@ -384,24 +401,23 @@ def tacacsplus_provider_group_provider_modify(handle, group_name, name,
 
     Args:
         handle (UcsHandle)
-        group_name (string): name of tacacsplus provider group
-        name (string): name of tacacsplus provider
+        group_name (string): tacacsplus provider group name
+        name (string): tacacsplus provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        AaaProviderRef: Managed Object
+        AaaProviderRef: managed object
 
     Raises:
-        UcsOperationError: If AaaProviderRef is not present
+        UcsOperationError: if AaaProviderRef is not present
 
     Example:
         tacacsplus_provider_group_provider_modify(
           handle, group_name="test_prov_grp", name="test_tacac_prov",
           order="2")
     """
-
     mo = tacacsplus_provider_group_provider_get(handle, group_name, name,
                         caller="tacacsplus_provider_group_provider_modify")
     mo.set_prop_multiple(**kwargs)
@@ -416,22 +432,22 @@ def tacacsplus_provider_group_provider_remove(handle, group_name, name):
 
     Args:
         handle (UcsHandle)
-        group_name (string): name of tacacsplus provider group
-        name (string): name of tacacsplus provider
+        group_name (string): tacacsplus provider group name
+        name (string): tacacsplus provider name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaProviderRef is not present
+        UcsOperationError: if AaaProviderRef is not present
 
     Example:
         tacacsplus_provider_group_provider_remove(handle,
-                                    group_name="test_prov_grp",
-                                    name="test_tacac_prov")
+                                                  group_name="test_prov_grp",
+                                                  name="test_tacac_prov")
     """
-
     mo = tacacsplus_provider_group_provider_get(handle, group_name, name,
                         caller="tacacsplus_provider_group_provider_remove")
     handle.remove_mo(mo)
     handle.commit()
+
