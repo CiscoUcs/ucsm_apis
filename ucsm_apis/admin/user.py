@@ -18,41 +18,43 @@ from ucsmsdk.ucsexception import UcsOperationError
 
 _base_dn = "sys/user-ext"
 
-
-def user_create(handle, name, pwd, clear_pwd_history=False,
+def user_create(handle, name, pwd=None, clear_pwd_history=False,
                 pwd_life_time="no-password-expire", account_status="active",
                 expires=False, expiration="never",
                 enc_pwd_set=False, enc_pwd=None,
                 first_name=None, last_name=None,
                 phone=None, email=None, descr=None,
                 **kwargs):
-
-
     """
-    Creates user
+    creates user
 
     Args:
         handle (UcsHandle)
-        name (string): name
-        first_name (string): first_name
-        last_name (string): last_name
-        descr (string): descr
-        clear_pwd_history (string): clear_pwd_history
+        name (string): user name
+        pwd (string): password
+        clear_pwd_history (bool): clear password history, True/False
+        pwd_life_time (string): password life time
+         valid values are "no-password-expire" or "0-3650" days
+        account_status (string): account status
+         valid values are "active", "inactive"
+        expires (bool): expires, True/False
+        expiration (string): expiration
+        enc_pwd_set (bool): True/False
+        enc_pwd (string): encrypted password
+        first_name (string): first name
+        last_name (string): last name
         phone (string): phone
         email (string): email
-        pwd (string): pwd
-        expires (string): expires
-        pwd_life_time (string): pwd_life_time
-        expiration (string): expiration
-        enc_pwd (string): enc_pwd
-        account_status (string): account_status
-        role (string): role
-        role_descr (string): role_descr
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaUser: Managed Object
+        AaaUser: managed object
+
+    Raises:
+        None
 
     Example:
         user_create(handle, name="test", first_name="firstname",
@@ -63,7 +65,6 @@ def user_create(handle, name, pwd, clear_pwd_history=False,
                   expiration="2016-01-13T00:00:00", enc_pwd=None,
                   account_status="active")
     """
-
     from ucsmsdk.mometa.aaa.AaaUser import AaaUser
 
     clear_pwd_history = ("no", "yes")[clear_pwd_history]
@@ -72,19 +73,20 @@ def user_create(handle, name, pwd, clear_pwd_history=False,
 
     mo = AaaUser(parent_mo_or_dn=_base_dn,
                  name=name,
+                 pwd=pwd,
+                 clear_pwd_history=clear_pwd_history,
+                 pwd_life_time=pwd_life_time,
+                 account_status=account_status,
+                 expires=expires,
+                 expiration=expiration,
+                 enc_pwd_set=enc_pwd_set,
+                 enc_pwd=enc_pwd,
                  first_name=first_name,
                  last_name=last_name,
-                 descr=descr,
-                 clear_pwd_history=clear_pwd_history,
                  phone=phone,
                  email=email,
-                 pwd=pwd,
-                 expires=expires,
-                 pwd_life_time=pwd_life_time,
-                 expiration=expiration,
-                 enc_pwd=enc_pwd,
-                 enc_pwd_set=enc_pwd_set,
-                 account_status=account_status)
+                 descr=descr
+                 )
 
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, True)
@@ -94,19 +96,21 @@ def user_create(handle, name, pwd, clear_pwd_history=False,
 
 def user_get(handle, name, caller="user_get"):
     """
-    Gets user
+    gets user
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): user name
 
     Returns:
-        AaaUser: Managed Object OR None
+        AaaUser: managed object
+
+    Raises:
+        UcsOperationError: if AaaUser is not present
 
     Example:
         user_get(handle, name="test")
     """
-
     dn = _base_dn + "/user-" + name
     mo = handle.query_dn(dn)
     if mo is None:
@@ -120,13 +124,16 @@ def user_exists(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): user name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaUser MO/None)
+
+    Raises:
+        None
 
     Example:
         user_exists(handle, name="test", first_name="firstname",
@@ -151,16 +158,16 @@ def user_modify(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): user name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        AaaUser: Managed Object
+        AaaUser: managed object
 
     Raises:
-        UcsOperationError: If AaaUser is not present
+        UcsOperationError: if AaaUser is not present
 
     Example:
         user_modify(handle, name="test", first_name="firstname",
@@ -171,7 +178,6 @@ def user_modify(handle, name, **kwargs):
                   expiration="2016-01-13T00:00:00", enc_pwd=None,
                   account_status="active")
     """
-
     mo = user_get(handle, name, "user_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
@@ -185,19 +191,18 @@ def user_delete(handle, name):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): user name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaUser is not present
+        UcsOperationError: if AaaUser is not present
 
     Example:
         user_delete(handle, name="test")
 
     """
-
     mo = user_get(handle, name, "user_delete")
     handle.remove_mo(mo)
     handle.commit()
@@ -205,7 +210,7 @@ def user_delete(handle, name):
 
 def user_role_add(handle, user_name, name, descr=None, **kwargs):
     """
-    Adds role to an user
+    adds role to an user
 
     Args:
         handle (UcsHandle)
@@ -215,11 +220,12 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaUserRole: Managed object
+        AaaUserRole: managed object
 
     Raises:
-        UcsOperationError: If AaaUser is not present
+        UcsOperationError: if AaaUser is not present
 
     Example:
         user_role_add(handle, user_name="test", name="admin")
@@ -237,7 +243,7 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
 
 def user_role_get(handle, user_name, name, caller="user_role_get"):
     """
-    Gets role for the user
+    gets role of the user
 
     Args:
         handle (UcsHandle)
@@ -245,12 +251,14 @@ def user_role_get(handle, user_name, name, caller="user_role_get"):
         name (string): rolename
 
     Returns:
-        AaaUserRole: Managed object OR None
+        AaaUserRole: managed object
+
+    Raises:
+        UcsOperationError: if AaaUserRole is not present
 
     Example:
         user_role_get(handle, user_name="test", name="admin")
     """
-
     user_dn = _base_dn + "/user-" + user_name
     dn = user_dn + "/role-" + name
     mo = handle.query_dn(dn)
@@ -272,7 +280,10 @@ def user_role_exists(handle, user_name, name, **kwargs):
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaUserRole MO/None)
+
+    Raises:
+        None
 
     Example:
         user_role_exists(handle, user_name="test", name="admin")
@@ -285,9 +296,38 @@ def user_role_exists(handle, user_name, name, **kwargs):
     return (mo_exists, mo if mo_exists else None)
 
 
+def user_role_modify(handle, user_name, name, **kwargs):
+    """
+    modifies user role
+
+    Args:
+        handle (UcsHandle)
+        user_name (string): username
+        name (string): rolename
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        AaaUserRole: managed object
+
+    Raises:
+        UcsOperationError: if AaaUserRole is not present
+
+
+    Example:
+        user_role_modify(handle, user_name="test", name="admin")
+    """
+    mo = user_role_get(handle, user_name, name, "user_role_modify")
+    mo.set_prop_multiple(**kwargs)
+    handle.set_mo(mo)
+    handle.commit()
+    return mo
+
+
 def user_role_remove(handle, user_name, name):
     """
-    Remove role from user
+    remove role from user
 
     Args:
         handle (UcsHandle)
@@ -298,12 +338,11 @@ def user_role_remove(handle, user_name, name):
         None
 
     Raises:
-        UcsOperationError: If AaaUserRole is not present
+        UcsOperationError: if AaaUserRole is not present
 
     Example:
         user_role_remove(handle, user_name="test", name="admin")
     """
-
     mo = user_role_get(handle, user_name, name, "user_role_remove")
     handle.remove_mo(mo)
     handle.commit()
@@ -311,26 +350,25 @@ def user_role_remove(handle, user_name, name):
 
 def user_locale_add(handle, user_name, name, descr=None, **kwargs):
     """
-    Adds locale to user
+    adds locale to user
 
     Args:
         handle (UcsHandle)
         user_name (string): username
         name (string): locale name
-        descr (string): descr
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        AaaUserLocale: Managed Object
+        AaaUserLocale: managed object
 
     Raises:
-        UcsOperationError: If AaaUser is not present
+        UcsOperationError: if AaaUser is not present
 
     Example:
         user_locale_add(handle, user_name="test", name="testlocale")
     """
-
     from ucsmsdk.mometa.aaa.AaaUserLocale import AaaUserLocale
 
     user = user_get(handle, user_name, caller="user_locale_add")
@@ -344,7 +382,7 @@ def user_locale_add(handle, user_name, name, descr=None, **kwargs):
 
 def user_locale_get(handle, user_name, name, caller="user_locale_get"):
     """
-    Gets locale for the user
+    gets locale for the user
 
     Args:
         handle (UcsHandle)
@@ -352,7 +390,10 @@ def user_locale_get(handle, user_name, name, caller="user_locale_get"):
         name (string): locale name
 
     Returns:
-        AaaUserLocale: Managed Object OR None
+        AaaUserLocale: managed object
+
+    Raises:
+        UcsOperationError: if AaaUserLocale is not present
 
     Example:
         user_locale_get(handle, user_name="test", name="testlocale")
@@ -367,7 +408,7 @@ def user_locale_get(handle, user_name, name, caller="user_locale_get"):
 
 def user_locale_exists(handle, user_name, name, **kwargs):
     """
-    check if locale already added to user
+    checks if locale already added to user
 
     Args:
         handle (UcsHandle)
@@ -378,7 +419,10 @@ def user_locale_exists(handle, user_name, name, **kwargs):
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaUserLocale MO/None)
+
+    Raises:
+        None
 
     Example:
         user_locale_exists(handle, user_name="test", name="testlocale")
@@ -392,9 +436,36 @@ def user_locale_exists(handle, user_name, name, **kwargs):
     return (mo_exists, mo if mo_exists else None)
 
 
+def user_locale_modify(handle, user_name, name, **kwargs):
+    """
+    modifies locale of user
+
+    Args:
+        handle (UcsHandle)
+        user_name (string): username
+        name (string): locale name
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        AaaUserLocale: managed object
+
+    Raises:
+        UcsOperationError: if AaaUserLocale is not present
+
+    Example:
+        user_locale_modify(handle, user_name="test", name="testlocale")
+    """
+    mo = user_locale_get(handle, user_name, name, caller="user_locale_modify")
+    mo.set_prop_multiple(**kwargs)
+    handle.set_mo(mo)
+    handle.commit()
+
+
 def user_locale_remove(handle, user_name, name):
     """
-    Remove locale from user
+    removes locale from user
 
     Args:
         handle (UcsHandle)
@@ -405,39 +476,49 @@ def user_locale_remove(handle, user_name, name):
         None
 
     Raises:
-        UcsOperationError: If AaaUserLocale is not present
+        UcsOperationError: if AaaUserLocale is not present
 
     Example:
         user_locale_remove(handle, user_name="test", name="testlocale")
     """
-
     mo = user_locale_get(handle, user_name, name, caller="user_locale_remove")
     handle.remove_mo(mo)
     handle.commit()
 
 
-def password_strength_check(handle, descr=None, **kwargs):
+def password_strength_check(handle, policy_owner = "local", descr=None,
+                            **kwargs):
     """
     Check password strength for locally authenticated user
 
     Args:
         handle (UcsHandle)
+        policy_owner (string): policy owner
+         valid values are "local", "pending-policy", "policy"
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaUserEp: Managed Object
+        AaaUserEp: managed object
+
+    Raises:
+        None
 
     Example:
         password_strength_check(handle)
     """
-
     mo = handle.query_dn(_base_dn + "/pwd-profile")
-    mo.pwd_strength_check = "yes"
-    mo.descr = descr
 
+    args = {'pwd_strength_check': "yes",
+            'policy_owner': policy_owner,
+            'descr': descr
+            }
+
+    mo.set_prop_multiple(**args)
     mo.set_prop_multiple(**kwargs)
+
     handle.set_mo(mo)
     handle.commit()
     return mo
@@ -445,18 +526,20 @@ def password_strength_check(handle, descr=None, **kwargs):
 
 def password_strength_uncheck(handle):
     """
-    check or un-check password strength for locally authenticated user
+    un-checks password strength for locally authenticated user
 
     Args:
         handle (UcsHandle)
 
     Returns:
-        AaaUserEp: Managed Object
+        AaaUserEp: managed object
+
+    Raises:
+        None
 
     Example:
         password_strength_uncheck(handle)
     """
-
     mo = handle.query_dn(_base_dn + "/pwd-profile")
     mo.pwd_strength_check = "no"
     handle.set_mo(mo)
@@ -464,19 +547,29 @@ def password_strength_uncheck(handle):
     return mo
 
 
-def password_profile_modify(handle, change_interval=None,
+def password_profile_modify(handle,
+                            min_passphrase_len="8"
+                            policy_owner="local"
+                            change_during_interval="disable",
+                            change_interval=None,
                             no_change_interval=None,
-                            change_during_interval=None, change_count=None,
-                            history_count=None, expiration_warn_time=None,
-                            descr=None, **kwargs):
+                            history_count=None,
+                            change_count=None,
+                            expiration_warn_time=None,
+                            descr=None,
+                            **kwargs):
     """
-    Modify password profile of locally authenticated user
+    modifies password profile of locally authenticated user
 
     Args:
         handle (UcsHandle)
+        min_passphrase_len (string): min passphrase length
+        policy_owner (string): policy_owner
+         valid values are "local", "pending-policy", "policy"
         change_interval (string): change interval
         no_change_interval (string): no change interval
-        change_during_interval (string): ["disable", "enable"]
+        change_during_interval (string): change during interval
+         valid values are "disable", "enable"
         change_count (string): change count
         history_count (string): history count
         expiration_warn_time(string): expiration warn time
@@ -484,23 +577,25 @@ def password_profile_modify(handle, change_interval=None,
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaPwdProfile: Managed Object
+        AaaPwdProfile: managed object
 
     Raises:
-        UcsOperationError: If AaaPwdProfile is not present
+        UcsOperationError: if AaaPwdProfile is not present
 
     Example:
         password_profile_modify(handle, change_count="2")
     """
-
     dn = _base_dn + "/pwd-profile"
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("password_profile_modify",
                                  "password profile does not exist.")
 
-    args = {'change_interval': change_interval,
+    args = {'min_passphrase_len': min_passphrase_len,
+            'policy_owner': policy_owner,
+            'change_interval': change_interval,
             'no_change_interval': no_change_interval,
             'change_during_interval': change_during_interval,
             'change_count': change_count,
