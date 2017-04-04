@@ -19,28 +19,32 @@ from ucsmsdk.ucsexception import UcsOperationError
 _base_dn = "sys/user-ext"
 
 
-def locale_create(handle, name, descr=None, **kwargs):
+def locale_create(handle, name, policy_owner="local", descr=None, **kwargs):
     """
     creates a locale
 
     Args:
         handle (UcsHandle)
-        name (string): name of ldap provider
-        descr (string): descr
+        name (string): locale name
+        policy_owner(string): policy owner
+         valid values are "local", "pending-policy", "policy"
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        AaaLocale : Managed Object
+        AaaLocale : managed object
+
+    Raises: None
 
     Example:
         locale_create(handle, name="test_locale")
     """
-
     from ucsmsdk.mometa.aaa.AaaLocale import AaaLocale
 
     mo = AaaLocale(parent_mo_or_dn=_base_dn,
                    name=name,
+                   policy_owner=policy_owner,
                    descr=descr)
 
     mo.set_prop_multiple(**kwargs)
@@ -51,19 +55,21 @@ def locale_create(handle, name, descr=None, **kwargs):
 
 def locale_get(handle, name, caller="locale_get"):
     """
-    Gets the locale
+    gets the locale
 
     Args:
         handle (UcsHandle)
-        name (string): name of ldap provider
+        name (string): locale name
 
     Returns:
-        AaaLocale : Managed Object OR None
+        AaaLocale : managed object
+
+    Raises:
+        UcsOperationError: if AaaLocale is not present
 
     Example:
         locale_get(handle, name="test_locale")
     """
-
     dn = _base_dn + "/locale-" + name
     mo = handle.query_dn(dn)
     if mo is None:
@@ -77,13 +83,16 @@ def locale_exists(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name of ldap provider
+        name (string): locale name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaLocale MO/None)
+
+    Raises:
+        None
 
     Example:
         locale_exists(handle, name="test_locale")
@@ -102,21 +111,20 @@ def locale_modify(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name of locale
+        name (string): locale name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        AaaLocale : Managed Object
+        AaaLocale : managed object
 
     Raises:
-        UcsOperationError: If AaaLocale is not present
+        UcsOperationError: if AaaLocale is not present
 
     Example:
         locale_modify(handle, name="test_locale", descr="testing locale")
     """
-
     mo = locale_get(handle, name, caller="locale_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
@@ -136,12 +144,11 @@ def locale_delete(handle, name):
         None
 
     Raises:
-        UcsOperationError: If AaaLocale is not present
+        UcsOperationError: if AaaLocale is not present
 
     Example:
         locale_delete(handle, name="test_locale")
     """
-
     mo = locale_get(handle, name, caller="locale_delete")
     handle.remove_mo(mo)
     handle.commit()
@@ -155,32 +162,32 @@ def locale_org_assign(handle, locale_name, name, org_dn="org-root", descr=None,
     Args:
         handle (UcsHandle)
         locale_name(string): locale name
-        name (string): name for the assignment
-        org_dn (string): Dn string of the org
-        descr (string): descr
+        name (string): name for the org assignment
+        org_dn (string): org dn
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaOrg : Managed Object
+        AaaOrg : managed object
 
     Raises:
-        UcsOperationError: If AaaLocale is not present
+        UcsOperationError: If AaaLocale or OrgOrg is not present
 
     Example:
         locale_org_assign(handle, locale_name="test_locale",
                           name="test_org_assign")
     """
-
     from ucsmsdk.mometa.aaa.AaaOrg import AaaOrg
 
-    obj = locale_get(handle, locale_name, caller="locale_org_assign")
+    locale = locale_get(handle, locale_name, caller="locale_org_assign")
 
     if not handle.query_dn(org_dn):
         raise UcsOperationError("locale_org_assign",
-                                 "org_dn does not exist")
+                                 "org '%s' does not exist" % org_dn)
 
-    mo = AaaOrg(parent_mo_or_dn=obj, name=name, org_dn=org_dn, descr=descr)
+    mo = AaaOrg(parent_mo_or_dn=locale, name=name, org_dn=org_dn, descr=descr)
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, True)
     handle.commit()
@@ -194,7 +201,7 @@ def locale_org_unassign(handle, locale_name, name):
     Args:
         handle (UcsHandle)
         locale_name(string): locale name
-        name (string): name of assignment
+        name (string): name of org assignment
 
     Returns:
         None
@@ -206,87 +213,13 @@ def locale_org_unassign(handle, locale_name, name):
         locale_org_unassign(handle, locale_name="test_locale,
                             name="org_name")
     """
-
     locale_dn = _base_dn + "/locale-" + locale_name
     dn = locale_dn + "/org-" + name
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("locale_org_unassign",
-                                 "No Org assigned to Locale")
+                                 "org '%s' not assigned to locale" % dn)
 
     handle.remove_mo(mo)
     handle.commit()
 
-
-def locale_domaingroup_assign(handle, locale_name, name,
-                              domaingroup_dn="domaingroup-root", descr=None,
-                              **kwargs):
-    """
-    assigns a locale to domaingroup
-
-    Args:
-        handle (UcsHandle)
-        locale_name(string): locale name
-        name (string): name for the assignment
-        domaingroup_dn (string): Dn string of the domaingroup
-        descr (string): descr
-        **kwargs: Any additional key-value pair of managed object(MO)'s
-                  property and value, which are not part of regular args.
-                  This should be used for future version compatibility.
-    Returns:
-        AaaOrg : Managed Object
-
-    Raises:
-        UcsOperationError: If AaaLocale is not present
-
-    Example:
-        locale_domaingroup_assign(handle, locale_name="test_locale",
-                                  name="test_domgrp_asn")
-    """
-
-    from ucsmsdk.mometa.aaa.AaaDomainGroup import AaaDomainGroup
-
-    obj = locale_get(handle, locale_name, caller="locale_domaingroup_assign")
-
-    if not handle.query_dn(domaingroup_dn):
-        raise UcsOperationError("locale_org_assign",
-                                 "domaingroup_dn does not exist")
-
-    mo = AaaDomainGroup(parent_mo_or_dn=obj, name=name,
-                        domaingroup_dn=domaingroup_dn, descr=descr)
-    mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
-    handle.commit()
-    return mo
-
-
-def locale_domaingroup_unassign(handle, locale_name, name):
-    """
-    unassigns a locale
-
-    Args:
-        handle (UcsHandle)
-        locale_name(string): locale name
-        name (string): name of assignment
-        descr (string): descr
-
-    Returns:
-        None
-
-    Raises:
-        UcsOperationError: If AaaOrg is not present
-
-    Example:
-        locale_domaingroup_unassign(handle, locale_name="test_locale,
-                                    name="test_domgrp_asn")
-    """
-
-    locale_dn = _base_dn + "/locale-" + locale_name
-    dn = locale_dn + "/domaingroup-" + name
-    mo = handle.query_dn(dn)
-    if not mo:
-        raise UcsOperationError("locale_domaingroup_unassign",
-                                 "No domaingroup assigned to Locale")
-
-    handle.remove_mo(mo)
-    handle.commit()
