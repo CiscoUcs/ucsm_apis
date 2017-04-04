@@ -15,41 +15,47 @@ This module performs the operation related to syslog.
 """
 from ucsmsdk.ucsexception import UcsOperationError
 
-_base_dn = "sys/svc-ext/syslog"
+_syslog_dn = "sys/svc-ext/syslog"
 
-def syslog_local_console_enable(handle, severity="emergencies", **kwargs):
+def syslog_local_console_enable(handle, severity="emergencies",
+                                name=None, descr=None, **kwargs):
     """
-    This method enables system logs on local console.
+    enables system logs on local console
 
     Args:
         handle (UcsHandle)
-        severity (string): Level of logging.
-                        ["emergencies","alerts", "critical"]
+        severity (string): level of logging
+         valid values are "emergencies","alerts", "critical"
+        name (string): name
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        CommSyslogConsole: Managed Object
+        CommSyslogConsole: managed object
 
     Raises:
-        UcsOperationError: If CommSyslogConsole is not present
+        UcsOperationError: if CommSyslogConsole is not present
 
     Example:
         syslog_local_console_enable(handle, severity="alerts")
     """
-
     from ucsmsdk.mometa.comm.CommSyslogConsole import \
         CommSyslogConsoleConsts
 
-    dn = _base_dn + "/console"
+    dn = _syslog_dn + "/console"
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_console_enable",
-                                 "syslog console does not exist.")
+                                 "syslog console '%s' does not exist." % dn)
 
-    mo.admin_state = CommSyslogConsoleConsts.ADMIN_STATE_ENABLED
-    mo.severity = severity
+    args = {'admin_state': CommSyslogConsoleConsts.ADMIN_STATE_ENABLED,
+            'severity': severity,
+            'name': name,
+            'descr': descr
+            }
 
+    mo.set_prop_multiple(**args)
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
@@ -58,25 +64,24 @@ def syslog_local_console_enable(handle, severity="emergencies", **kwargs):
 
 def syslog_local_console_disable(handle):
     """
-    This method disables system logs on local console.
+    disables system logs on local console
 
     Args:
         handle (UcsHandle)
 
     Returns:
-        CommSyslogConsole: Managed Object
+        CommSyslogConsole: managed object
 
     Raises:
-        UcsOperationError: If CommSyslogConsole is not present
+        UcsOperationError: if CommSyslogConsole is not present
 
     Example:
-        syslog_local_console_enable(handle)
+        syslog_local_console_disable(handle)
     """
-
     from ucsmsdk.mometa.comm.CommSyslogConsole import \
         CommSyslogConsoleConsts
 
-    dn = _base_dn + "/console"
+    dn = _syslog_dn + "/console"
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_console_disable",
@@ -88,40 +93,47 @@ def syslog_local_console_disable(handle):
     return mo
 
 
-def syslog_local_monitor_enable(handle, severity="emergencies", **kwargs):
+def syslog_local_monitor_enable(handle, severity="emergencies",
+                                name=None, descr=None, **kwargs):
     """
-    This method enables logs on local monitor.
+    enables sytem logs on local monitor
 
     Args:
         handle (UcsHandle)
-        severity (string): Level of logging.
-                        ["alerts", "critical", "debugging", "emergencies",
-                        "errors", "information", "notifications", "warnings"]
+        severity (string): level of logging
+         valid values are "alerts", "critical", "debugging", "emergencies",
+          "errors", "information", "notifications", "warnings"
+        name (string): name
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        CommSyslogMonitor: Managed Object
+        CommSyslogMonitor: managed object
 
     Raises:
-        UcsOperationError: If CommSyslogMonitor is not present
+        UcsOperationError: if CommSyslogMonitor is not present
 
     Example:
-        syslog_local_monitor_enable(handle, severity="alert")
+        syslog_local_monitor_enable(handle, severity="alerts")
     """
-
     from ucsmsdk.mometa.comm.CommSyslogMonitor import \
         CommSyslogMonitorConsts
 
-    dn = _base_dn + "/monitor"
+    dn = _syslog_dn + "/monitor"
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_monitor_enable",
-                                 "syslog monitor does not exist.")
+                                 "syslog monitor '%s' does not exist." % dn)
 
-    mo.admin_state = CommSyslogMonitorConsts.ADMIN_STATE_ENABLED
-    mo.severity = severity
+    args = {'admin_state': CommSyslogMonitorConsts.ADMIN_STATE_ENABLED,
+            'severity': severity,
+            'name': name,
+            'descr': descr
+            }
 
+    mo.set_prop_multiple(**args)
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
@@ -130,75 +142,75 @@ def syslog_local_monitor_enable(handle, severity="emergencies", **kwargs):
 
 def syslog_local_monitor_disable(handle):
     """
-    This method disables logs on local monitor.
+    disables system logs on local monitor
 
     Args:
         handle (UcsHandle)
 
     Returns:
-        CommSyslogMonitor: Managed Object
+        CommSyslogMonitor: managed object
 
     Raises:
-        UcsOperationError: If CommSyslogMonitor is not present
+        UcsOperationError: if CommSyslogMonitor is not present
 
     Example:
         mo = syslog_local_monitor_disable(handle)
     """
-
     from ucsmsdk.mometa.comm.CommSyslogMonitor import \
         CommSyslogMonitorConsts
 
-    dn = _base_dn + "/monitor"
+    dn = _syslog_dn + "/monitor"
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_monitor_disable",
                                  "syslog monitor does not exist.")
 
     mo.admin_state = CommSyslogMonitorConsts.ADMIN_STATE_DISABLED
-
     handle.set_mo(mo)
     handle.commit()
     return mo
 
 
-def syslog_local_file_enable(handle, name=None, severity="emergencies",
-                             size="40000", **kwargs):
+def syslog_local_file_enable(handle, severity="emergencies", size=None,
+                             name=None, descr=None, **kwargs):
     """
-    This method configures System Logs on local file storage.
+    enables system logs to save messages on local file
 
     Args:
         handle (UcsHandle)
-        name (string): Name of Log file.
-        severity (string): Level of logging.
-                        ["alerts", "critical", "debugging", "emergencies",
-                        "errors", "information", "notifications", "warnings"]
-        size (string): Maximum allowed size of log file(In KBs).
+        severity (string): level of logging
+         valid values are "alerts", "critical", "debugging", "emergencies",
+          "errors", "information", "notifications", "warnings"
+        size (string): size of log file, (in bytes)
+        name (string): name of log file
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        CommSyslogFile: Managed object
+        CommSyslogFile: managed object
 
     Raises:
-        UcsOperationError: If CommSyslogFile is not present
+        UcsOperationError: if CommSyslogFile is not present
 
     Example:
         syslog_local_file_enable(handle, severity="alert", size="435675",
                                 name="sys_log")
     """
-
     from ucsmsdk.mometa.comm.CommSyslogFile import CommSyslogFileConsts
 
-    dn = _base_dn + "/file"
+    dn = _syslog_dn + "/file"
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_file_enable",
-                                 "syslog file does not exist.")
+                                 "syslog file '%s' does not exist." % dn)
 
-    mo.admin_state = CommSyslogFileConsts.ADMIN_STATE_ENABLED
-    args = {'name': name,
+    args = {'admin_state': CommSyslogFileConsts.ADMIN_STATE_ENABLED,
             'severity': severity,
-            'size': size
+            'size': size,
+            'name': name,
+            'descr': descr
             }
 
     mo.set_prop_multiple(**args)
@@ -211,24 +223,23 @@ def syslog_local_file_enable(handle, name=None, severity="emergencies",
 
 def syslog_local_file_disable(handle):
     """
-    This method disables System Logs on local file storage.
+    disables system logs to save messages on local file
 
     Args:
         handle (UcsHandle)
 
     Returns:
-        CommSyslogFile: Managed Object
+        CommSyslogFile: managed object
 
     Raises:
-        UcsOperationError: If CommSyslogFile is not present
+        UcsOperationError: if CommSyslogFile is not present
 
     Example:
         syslog_local_file_disable(handle)
     """
-
     from ucsmsdk.mometa.comm.CommSyslogFile import CommSyslogFileConsts
 
-    dn = _base_dn + "/file"
+    dn = _syslog_dn + "/file"
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_file_disable",
@@ -240,47 +251,48 @@ def syslog_local_file_disable(handle):
     return mo
 
 
-def syslog_remote_enable(handle, name, hostname="none",
-                         severity="emergencies", forwarding_facility="local0",
-                         **kwargs):
+def syslog_remote_enable(handle, name, hostname, severity="emergencies",
+                         forwarding_facility="local0", **kwargs):
     """
-    This method enables System Logs on remote server.
+    enables system logs on remote server
 
     Args:
         handle (UcsHandle)
-        name (string): Remote Server ID -
-                            "primary" or "secondary" or "tertiary"
-        hostname (string) : Remote host IP or Name
-        severity (string): Level of logging.
-                        ["alerts", "critical", "debugging", "emergencies",
-                        "errors", "information", "notifications", "warnings"]
-        forwarding_facility (string): Forwarding mechanism local0 to local7.
+        name (string): remote server type
+         valid values are "primary", "secondary", "tertiary"
+        hostname (string) : remote hostname or ip address
+        severity (string): Level of logging
+         valid values are "alerts", "critical", "debugging", "emergencies",
+          "errors", "information", "notifications", "warnings"
+        forwarding_facility (string): forwarding mechanism local0 to local7
+         valid values are "local0", "local1", "local2", "local3", "local4",
+          "local5", "local6", "local7"
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        CommSyslogClient Object
+        CommSyslogClient: managed object
 
     Raises:
-        UcsOperationError: If CommSyslogClient is not present
+        UcsOperationError: if CommSyslogClient is not present
 
     Example:
         syslog_remote_enable(handle, name="primary", hostname="192.168.1.2",
-                    severity="alert")
+                             severity="alert")
     """
-
     from ucsmsdk.mometa.comm.CommSyslogClient import \
         CommSyslogClientConsts
 
-    dn = _base_dn + "/client-" + name
+    dn = _syslog_dn + "/client-" + name
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_remote_enable",
                                  "Remote Destination '%s' does not exist" % dn)
-    mo.admin_state = CommSyslogClientConsts.ADMIN_STATE_ENABLED
-    args = {'forwarding_facility': forwarding_facility,
+
+    args = {'admin_state': CommSyslogClientConsts.ADMIN_STATE_ENABLED,
             'hostname': hostname,
-            'severity': severity
+            'severity': severity,
+            'forwarding_facility': forwarding_facility
             }
 
     mo.set_prop_multiple(**args)
@@ -293,27 +305,26 @@ def syslog_remote_enable(handle, name, hostname="none",
 
 def syslog_remote_disable(handle, name):
     """
-    This method enables System Logs on remote server.
+    disables system logs on remote server
 
     Args:
         handle (UcsHandle)
-        name (string): Remote Server ID -
-                            "primary" or "secondary" or "tertiary"
+        name (string): remote server type
+         valid values are "primary", "secondary", "tertiary"
 
     Returns:
-        CommSyslogClient: Managed Object
+        CommSyslogClient: managed object
 
     Raises:
-        UcsOperationError: If CommSyslogClient is not present
+        UcsOperationError: if CommSyslogClient is not present
 
     Example:
         syslog_remote_disable(handle, name="primary")
     """
-
     from ucsmsdk.mometa.comm.CommSyslogClient import \
         CommSyslogClientConsts
 
-    dn = _base_dn + "/client-" + name
+    dn = _syslog_dn + "/client-" + name
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_remote_disable",
@@ -325,31 +336,35 @@ def syslog_remote_disable(handle, name):
     return mo
 
 
-def syslog_source(handle, faults=None, audits=None, events=None, **kwargs):
+def syslog_source_configure(handle, faults=None, audits=None, events=None,
+                            name=None, descr=None, **kwargs):
     """
-    This method configures Type of System Logs.
+    configures system logs for local source (faults, audits and events)
 
     Args:
         handle (UcsHandle)
-        faults (string) : for fault logging. ["disabled", "enabled"]
-        audits (string): for audit task logging. ["disabled", "enabled"]
-        events (string): for event logging. ["disabled", "enabled"]
+        faults (string) : for fault logging
+         valid values are "disabled", "enabled"
+        audits (string): for audit task logging
+         valid values are "disabled", "enabled"
+        events (string): for event logging
+         valid values are "disabled", "enabled"
+        name (string): name
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        CommSyslogSource: Managed object
+        CommSyslogSource: managed object
 
     Raises:
-        UcsOperationError: If CommSyslogSource is not present
+        UcsOperationError: if CommSyslogSource is not present
 
     Example:
-            syslog_source(handle, faults="enabled", audits="disabled",
-                    events="disabled")
-
+        syslog_source_configure(handle, faults="enabled", audits="disabled",
+                                events="disabled")
     """
-
-    dn = _base_dn + "/source"
+    dn = _syslog_dn + "/source"
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_source",
@@ -357,7 +372,9 @@ def syslog_source(handle, faults=None, audits=None, events=None, **kwargs):
 
     args = {'faults': faults,
             'audits': audits,
-            'events': events
+            'events': events,
+            'name': name,
+            'descr': descr
             }
 
     mo.set_prop_multiple(**args)
