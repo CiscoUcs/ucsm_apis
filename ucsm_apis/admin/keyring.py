@@ -321,6 +321,8 @@ def trusted_point_create(handle, name, policy_owner="local",
     Args:
         handle (ucshandle)
         name (string): trusted point name
+        policy_owner (string): policy owner
+         valid values are "local", "pending-policy", "policy"
         descr (string): description
         cert_chain (string): chain of certificate
         **kwargs: Any additional key-value pair of managed object(MO)'s
