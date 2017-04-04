@@ -406,7 +406,7 @@ def snmp_user_modify(handle, name, **kwargs):
     Example:
         snmp_user_modify(handle, name="snmpuser", descr=None,
                           pwd="password", privpwd="password",
-                          auth="md5", use_aes="no")
+                          auth="md5", use_aes=False)
     """
     mo = snmp_user_get(handle, name, caller="snmp_user_modify")
     mo.set_prop_multiple(**kwargs)

@@ -653,7 +653,7 @@ def call_home_system_inventory_configure(handle,
                                          poll_interval_seconds="300",
                                          retry_delay_minutes="10",
                                          minimum_send_now_interval_seconds="5",
-                                         send_now="no",
+                                         send_now=False,
                                          **kwargs):
     """
     Configures callhome system inventory
@@ -668,8 +668,7 @@ def call_home_system_inventory_configure(handle,
         poll_interval_seconds (string): poll interval in seconds
         retry_delay_minutes (string): retry after 'n' minutes
         minimum_send_now_interval_seconds (string): minimum send interval
-        send_now : send inventory now
-         valid values "yes" and "no"
+        send_now (bool): send inventory now, True/False
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
@@ -689,17 +688,23 @@ def call_home_system_inventory_configure(handle,
         raise UcsOperationError("call_home_system_inventory_configure",
                         "Callhome system inventory '%s' does not exist." % dn)
 
-    mo.admin_state = admin_state
-    mo.interval_days = interval_days
-    mo.time_of_day_hour = time_of_day_hour
-    mo.time_of_day_minute = time_of_day_minute
-    mo.maximum_retry_count = maximum_retry_count
-    mo.poll_interval_seconds = poll_interval_seconds
-    mo.retry_delay_minutes = retry_delay_minutes
-    mo.minimum_send_now_interval_seconds = minimum_send_now_interval_seconds
-    mo.send_now = send_now
+    send_now = ("no", "yes")[send_now]
 
+    args = {
+        'admin_state': admin_state,
+        'interval_days': interval_days,
+        'time_of_day_hour': time_of_day_hour,
+        'time_of_day_minute': time_of_day_minute,
+        'maximum_retry_count': maximum_retry_count,
+        'poll_interval_seconds': poll_interval_seconds,
+        'retry_delay_minutes': retry_delay_minutes,
+        'minimum_send_now_interval_seconds': minimum_send_now_interval_seconds,
+        'send_now': send_now
+    }
+
+    mo.set_prop_multiple(**args)
     mo.set_prop_multiple(**kwargs)
+
     handle.set_mo(mo)
     handle.commit()
     return mo

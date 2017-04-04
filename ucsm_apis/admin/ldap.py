@@ -61,7 +61,7 @@ def ldap_configure(handle, timeout="30", attribute="CiscoAvPair",
 
 
 def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
-                         basedn="", port="389", enable_ssl="no", filter=None,
+                         basedn="", port="389", enable_ssl=False, filter=None,
                          attribute=None, key=None, timeout="30",
                          vendor="OpenLdap", retries="1",
                          descr=None, **kwargs):
@@ -75,7 +75,7 @@ def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
         rootdn (string): rootdn
         basedn (string): basedn
         port (string): port
-        enable_ssl (string): enable ssl, "yes" or "no"
+        enable_ssl (bool): enable ssl, True/False
         filter (string): filter
         attribute (string): attribute
         key (string): key
@@ -98,6 +98,8 @@ def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
                              order="3")
     """
     from ucsmsdk.mometa.aaa.AaaLdapProvider import AaaLdapProvider
+
+    enable_ssl = ("no", "yes")[enable_ssl]
 
     mo = AaaLdapProvider(parent_mo_or_dn=_ldap_dn,
                          name=name,
@@ -192,7 +194,7 @@ def ldap_provider_modify(handle, name, **kwargs):
         UcsOperationError: if AaaLdapProvider is not present
 
     Example:
-        ldap_provider_modify(handle, name="test_ldap_prov", enable_ssl="yes")
+        ldap_provider_modify(handle, name="test_ldap_prov", enable_ssl=True)
     """
     mo = ldap_provider_get(handle, name, "ldap_provider_modify")
     mo.set_prop_multiple(**kwargs)

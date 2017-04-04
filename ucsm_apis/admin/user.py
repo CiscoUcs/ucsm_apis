@@ -60,7 +60,7 @@ def user_create(handle, name, pwd=None, clear_pwd_history=False,
         user_create(handle, name="test", first_name="firstname",
                   last_name="lastname", descr=None, clear_pwd_history="no",
                   phone="+91-1234567890", email="test@cisco.com",
-                  pwd="p@ssw0rd", expires="yes",
+                  pwd="p@ssw0rd", expires=True,
                   pwd_life_time="no-password-expire",
                   expiration="2016-01-13T00:00:00", enc_pwd=None,
                   account_status="active")
@@ -139,7 +139,7 @@ def user_exists(handle, name, **kwargs):
         user_exists(handle, name="test", first_name="firstname",
                   last_name="lastname", descr=None, clear_pwd_history="no",
                   phone="+91-1234567890", email="test@cisco.com",
-                  expires="yes",
+                  expires=True,
                   pwd_life_time="no-password-expire",
                   expiration="2016-01-13T00:00:00", enc_pwd=None,
                   account_status="active")
@@ -173,7 +173,7 @@ def user_modify(handle, name, **kwargs):
         user_modify(handle, name="test", first_name="firstname",
                   last_name="lastname", descr=None, clear_pwd_history="no",
                   phone="+91-1234567890", email="test@cisco.com",
-                  expires="yes",
+                  expires=True,
                   pwd_life_time="no-password-expire",
                   expiration="2016-01-13T00:00:00", enc_pwd=None,
                   account_status="active")
@@ -548,8 +548,8 @@ def password_strength_uncheck(handle):
 
 
 def password_profile_modify(handle,
-                            min_passphrase_len="8"
-                            policy_owner="local"
+                            min_passphrase_len="8",
+                            policy_owner="local",
                             change_during_interval="disable",
                             change_interval=None,
                             no_change_interval=None,
