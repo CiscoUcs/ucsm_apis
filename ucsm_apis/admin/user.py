@@ -566,13 +566,28 @@ def password_profile_modify(handle,
         min_passphrase_len (string): min passphrase length
         policy_owner (string): policy_owner
          valid values are "local", "pending-policy", "policy"
-        change_interval (string): change interval
-        no_change_interval (string): no change interval
+        change_interval (string): change interval in hours, "1-745"
+         Specifies the maximum number of hours over which the
+         number of password changes specified in the change_count
+         field are enforced.
+        no_change_interval (string): no change interval in hours, "1-745"
+         Specifies the minimum number of hours that a
+         locally authenticated user must wait before changing
+         a newly created password.
         change_during_interval (string): change during interval
          valid values are "disable", "enable"
-        change_count (string): change count
-        history_count (string): history count
-        expiration_warn_time(string): expiration warn time
+         Restricts the number of password changes a locally
+         authenticated user can make within a given number of
+         hours.
+        change_count (string): change count, "0-10"
+         Specifies the maximum number of times a locally
+         authenticated user can change his or her password during
+         the change_interval
+        history_count (string): history password count, "0-15"
+         Specifies the number of unique passwords that a locally
+         authenticated user must create before that user can reuse
+         a previously used password
+        expiration_warn_time(string): expiration warning time
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
