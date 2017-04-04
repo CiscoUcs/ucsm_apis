@@ -19,6 +19,22 @@ from ucsmsdk.ucsexception import UcsOperationError
 _base_dn = "sys/svc-ext"
 
 def snmp_config_get(handle, caller="snmp_config_get"):
+    """
+    gets snmp config
+
+    Args:
+        handle (UcsHandle)
+        caller (string): name of the caller function
+
+    Returns:
+        CommSnmp: managed object
+
+    Raises:
+        UcsOperationError: if CommSnmp is not present
+
+    Example:
+        mo = snmp_config_get(handle)
+    """
     dn = _base_dn + "/snmp-svc"
     mo = handle.query_dn(dn)
     if mo is None:
@@ -27,44 +43,52 @@ def snmp_config_get(handle, caller="snmp_config_get"):
     return mo
 
 
-def snmp_enable(handle, community=None, sys_contact=None, sys_location=None,
-                descr=None, **kwargs):
+def snmp_enable(handle, policy_owner="local", is_set_snmp_secure=False,
+                descr="SNMP Service", community=None, sys_contact=None,
+                sys_location=None, **kwargs):
     """
     Enables SNMP.
 
     Args:
         handle (UcsHandle)
+        policy_owner (string): policy owner
+         valid values are "local", "pending-policy", "policy"
+        is_set_snmp_secure (bool): True/False
+        descr (string): description
         community (string): community
-        sys_contact (string): sys_contact
-        sys_location (string): sys_location
-        descr (string): descr
+        sys_contact (string): system contact
+        sys_location (string): system location
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        CommSnmp: Managed object
+        CommSnmp: managed object
 
     Raises:
-        UcsOperationError: If CommSnmp Mo is not present
+        UcsOperationError: if CommSnmp is not present
 
     Example:
         mo = snmp_enable(handle,
-                    community="username",
-                    sys_contact="user contact",
-                    sys_location="user location",
-                    descr="SNMP Service")
+                         community="username",
+                         sys_contact="user contact",
+                         sys_location="user location",
+                         descr="SNMP Service")
 
     """
-
     from ucsmsdk.mometa.comm.CommSnmp import CommSnmpConsts
 
-    mo = snmp_config_get(handle, caller="snmp_enable")
-    mo.admin_state = CommSnmpConsts.ADMIN_STATE_ENABLED
+    is_set_snmp_secure = ("no", "yes")[is_set_snmp_secure]
 
-    args = {'community': community,
+    mo = snmp_config_get(handle, caller="snmp_enable")
+
+    args = {'admin_state': CommSnmpConsts.ADMIN_STATE_ENABLED,
+            'policy_owner': policy_owner,
+            'is_set_snmp_secure': is_set_snmp_secure,
+            'descr': descr,
+            'community': community,
             'sys_contact': sys_contact,
-            'sys_location': sys_location,
-            'descr': descr
+            'sys_location': sys_location
             }
 
     mo.set_prop_multiple(**args)
@@ -77,21 +101,20 @@ def snmp_enable(handle, community=None, sys_contact=None, sys_location=None,
 
 def snmp_disable(handle):
     """
-    Disables SNMP.
+    disables SNMP
 
     Args:
         handle (UcsHandle)
 
     Returns:
-        CommSnmp: Managed Object
+        CommSnmp: managed object
 
     Raises:
-        UcsOperationError: If CommSnmp Mo is not present
+        UcsOperationError: if CommSnmp Mo is not present
 
     Example:
         snmp_disable(handle)
     """
-
     from ucsmsdk.mometa.comm.CommSnmp import CommSnmpConsts
 
     mo = snmp_config_get(handle, "snmp_disable")
@@ -104,32 +127,38 @@ def snmp_disable(handle):
 def snmp_trap_add(handle, hostname, community, port="162", version="v2c",
                   notification_type="traps", v3_privilege="noauth", **kwargs):
     """
-    Adds snmp trap.
+    adds snmp trap.
 
     Args:
         handle (UcsHandle)
-        hostname (string): ip address
-        community (string): community
-        port (number): port
-        version (string): "v1", "v2c", "v3"
-        notification_type (string): "informs", "traps"
-            Required only for version "v2c" and "v3"
-        v3_privilege (string): "auth", "noauth", "priv"
-            Required only for version "v3"
+        hostname (string): hostname or ip address
+        community (string): community or username
+        port (string): port number
+        version (string): version
+         valid values are "v1", "v2c", "v3"
+        notification_type (string): notification type
+         valid values are "informs", "traps"
+         *note: required only for version "v2c" and "v3"
+        v3_privilege (string): privilege for version "v3"
+         valid value are auth", "noauth", "priv"
+         *note: required only for version "v3"
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        CommSnmpTrap: Managed Object
+        CommSnmpTrap: managed object
+
+    Raises:
+        None
+
 
     Example:
         snmp_trap_add(handle, hostname="10.10.10.10",
                       community="username", port="162",
                       version="v2c",
                       notification_type="informs")
-
     """
-
     from ucsmsdk.mometa.comm.CommSnmpTrap import CommSnmpTrap
 
     mo = CommSnmpTrap(
@@ -149,20 +178,22 @@ def snmp_trap_add(handle, hostname, community, port="162", version="v2c",
 
 def snmp_trap_get(handle, hostname, caller="snmp_trap_get"):
     """
-    Gets snmp trap
+    gets snmp trap
 
     Args:
         handle (UcsHandle)
-        hostname (string): ip address
+        hostname (string): hostname or ip address
+        caller (string): name of the caller function
 
     Returns:
-        CommSnmpTrap: Managed Object OR None
+        CommSnmpTrap: managed object
+
+    Raises:
+        UcsOperationError: if CommSnmpTrap is not present
 
     Example:
         snmp_trap_get(handle, hostname="10.10.10.10")
-
     """
-
     dn = _base_dn + "/snmp-svc" + "/snmp-trap" + hostname
     mo = handle.query_dn(dn)
     if mo is None:
@@ -176,20 +207,22 @@ def snmp_trap_exists(handle, hostname, **kwargs):
 
     Args:
         handle (UcsHandle)
-        hostname (string): ip address
+        hostname (string): hostname or ip address
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, CommSnmpTrap MO/None)
+
+    Raises:
+        None
 
     Example:
         snmp_trap_exists(handle, hostname="10.10.10.10",
-                      community="username", port="162",
-                      version="v2c",
-                      notification_type="informs")
-
+                         community="username", port="162",
+                         version="v2c",
+                         notification_type="informs")
     """
     try:
         mo = snmp_trap_get(handle, hostname, caller="snmp_trap_exists")
@@ -201,30 +234,28 @@ def snmp_trap_exists(handle, hostname, **kwargs):
 
 def snmp_trap_modify(handle, hostname, **kwargs):
     """
-    Modifies snmp trap.
+    modifies snmp trap.
 
     Args:
         handle (UcsHandle)
-        hostname (string): ip address
+        hostname (string): hostname or ip address
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        CommSnmpTrap: Managed Object
+        CommSnmpTrap: managed object
 
     Raises:
-        UcsOperationError: If CommSnmpTrap Mo is not present
+        UcsOperationError: if CommSnmpTrap Mo is not present
 
     Example:
         snmp_trap_modify(handle, hostname="10.10.10.10",
-                          community="username", port="162",
-                          version="v3",
-                          notification_type="traps",
-                          v3_privilege="noauth")
-
+                         community="username", port="162",
+                         version="v3",
+                         notification_type="traps",
+                         v3_privilege="noauth")
     """
-
     mo = snmp_trap_get(handle, hostname, caller="snmp_trap_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
@@ -234,63 +265,66 @@ def snmp_trap_modify(handle, hostname, **kwargs):
 
 def snmp_trap_remove(handle, hostname):
     """
-    Modifies snmp trap.
+    removes snmp trap.
 
     Args:
         handle (UcsHandle)
-        hostname (string): ip address
+        hostname (string): hostname or ip address
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If CommSnmpTrap Mo is not present
+        UcsOperationError: if CommSnmpTrap Mo is not present
 
     Example:
         snmp_trap_remove(handle, hostname="10.10.10.10")
-
     """
-
     mo = snmp_trap_get(handle, hostname, caller="snmp_trap_remove")
     handle.remove_mo(mo)
     handle.commit()
 
 
-def snmp_user_add(handle, name, pwd, privpwd, auth="md5",
-                  use_aes="no", descr=None, **kwargs):
+def snmp_user_add(handle, name, pwd, auth="md5", use_aes=False,
+                  privpwd=None, descr=None, **kwargs):
     """
     Adds snmp user.
 
     Args:
         handle (UcsHandle)
         name (string): snmp username
-        descr (string): description
-        pwd (string): password
+        pwd (string): password, minimum 8 character
+        auth (string): auth type
+         valid values are "md5", "sha"
+        use_aes (bool): Use AES-128, True/False
         privpwd (string): privacy password
-        auth (string): "md5", "sha"
-        use_aes (string): "yes", "no"
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        CommSnmpUser: Managed Object
+        CommSnmpUser: managed object
+
+    Raises:
+        None
 
     Example:
         snmp_user_add(handle, name="snmpuser", descr=None, pwd="password",
-                    privpwd="password", auth="sha")
-
+                      privpwd="password", auth="sha")
     """
-
     from ucsmsdk.mometa.comm.CommSnmpUser import CommSnmpUser
+
+    use_aes = ("no", "yes")[use_aes]
 
     mo = CommSnmpUser(
         parent_mo_or_dn=_base_dn + "/snmp-svc",
         name=name,
-        descr=descr,
         pwd=pwd,
-        privpwd=privpwd,
         auth=auth,
-        use_aes=use_aes)
+        use_aes=use_aes,
+        privpwd=privpwd,
+        descr=descr)
 
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, True)
@@ -300,20 +334,22 @@ def snmp_user_add(handle, name, pwd, privpwd, auth="md5",
 
 def snmp_user_get(handle, name, caller="snmp_user_get"):
     """
-    Gets snmp user.
+    gets snmp user.
 
     Args:
         handle (UcsHandle)
         name (string): snmp username
+        caller (string): name of the caller function
 
     Returns:
-        CommSnmpUser: Managed Object OR None
+        CommSnmpUser: managed object
+
+    Raises:
+        UcsOperationError: if CommSnmpUser is not present
 
     Example:
         snmp_user_get(handle, name="snmpuser")
-
     """
-
     dn = _base_dn + "/snmp-svc" + "/snmpv3-user-" + name
     mo = handle.query_dn(dn)
     if mo is None:
@@ -333,12 +369,14 @@ def snmp_user_exists(handle, name, **kwargs):
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, CommSnmpUser MO/None)
+
+    Raises:
+        None
 
     Example:
         snmp_user_exists(handle, name="snmpuser", descr=None,
                     auth="sha")
-
     """
     try:
         mo = snmp_user_get(handle, name, caller="snmp_user_exists")
@@ -350,7 +388,7 @@ def snmp_user_exists(handle, name, **kwargs):
 
 def snmp_user_modify(handle, name, **kwargs):
     """
-    Modifies snmp user.
+    modifies snmp user.
 
     Args:
         handle (UcsHandle)
@@ -360,18 +398,16 @@ def snmp_user_modify(handle, name, **kwargs):
                   to get all configurable properties of class
 
     Returns:
-        CommSnmpUser: Managed Object
+        CommSnmpUser: managed object
 
     Raises:
-        UcsOperationError: If CommSnmpUser Mo is not present
+        UcsOperationError: if CommSnmpUser is not present
 
     Example:
         snmp_user_modify(handle, name="snmpuser", descr=None,
                           pwd="password", privpwd="password",
                           auth="md5", use_aes="no")
-
     """
-
     mo = snmp_user_get(handle, name, caller="snmp_user_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
@@ -381,7 +417,7 @@ def snmp_user_modify(handle, name, **kwargs):
 
 def snmp_user_remove(handle, name):
     """
-    removes snmp user.
+    removes snmp user
 
     Args:
         handle (UcsHandle)
@@ -391,13 +427,11 @@ def snmp_user_remove(handle, name):
         None
 
     Raises:
-        UcsOperationError: If CommSnmpUser Mo is not present
+        UcsOperationError: if CommSnmpUser is not present
 
     Example:
         snmp_user_remove(handle, name="snmpuser")
-
     """
-
     mo = snmp_user_get(handle, name, caller="snmp_user_remove")
     handle.remove_mo(mo)
     handle.commit()
