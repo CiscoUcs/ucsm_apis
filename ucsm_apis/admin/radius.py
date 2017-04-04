@@ -16,7 +16,7 @@ This module performs the operation related to radius configuration.
 """
 from ucsmsdk.ucsexception import UcsOperationError
 
-_base_dn = "sys/radius-ext"
+_radius_dn = "sys/radius-ext"
 
 def radius_provider_create(handle, name, order="lowest-available", key=None,
                            auth_port="1812", timeout="5", retries="1",
@@ -26,29 +26,32 @@ def radius_provider_create(handle, name, order="lowest-available", key=None,
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): radius provider name (Hostname/FQDN or IP Address)
         order (string): order
+         valid values are "lowest-available" or "0-16"
         key (string): key
-        auth_port (string): auth_port
+        auth_port (string): authorization port
         timeout (string): timeout
         retries (string): retries
-        enc_key (string): enc_key
+        enc_key (string): enc key
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        AaaRadiusProvider: Managed Object
+        AaaRadiusProvider: managed object
+
+    Raises:
+        None
 
     Example:
         radius_provider_create(handle, name="test_radius_prov",
                                auth_port="320", timeout="10")
     """
-
     from ucsmsdk.mometa.aaa.AaaRadiusProvider import AaaRadiusProvider
 
     mo = AaaRadiusProvider(
-        parent_mo_or_dn=_base_dn,
+        parent_mo_or_dn=_radius_dn,
         name=name,
         order=order,
         key=key,
@@ -66,20 +69,23 @@ def radius_provider_create(handle, name, order="lowest-available", key=None,
 
 def radius_provider_get(handle, name, caller="radius_provider_get"):
     """
-    Gets radius provider
+    gets radius provider
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): radius provider name
+        caller (string): name of the caller function
 
     Returns:
-        AaaRadiusProvider: Managed Object OR None
+        AaaRadiusProvider: managed object
+
+    Raises:
+        UcsOperationError: if AaaRadiusProvider is not present
 
     Example:
         radius_provider_get(handle, name="test_radius_provider")
     """
-
-    dn = _base_dn + "/provider-" + name
+    dn = _radius_dn + "/provider-" + name
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller,
@@ -93,13 +99,16 @@ def radius_provider_exists(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): radius provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaRadiusProvider MO/None)
+
+    Raises:
+        None
 
     Example:
         radius_provider_exists(handle, name="test_radius_provider")
@@ -118,21 +127,20 @@ def radius_provider_modify(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): radius provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        AaaRadiusProvider: Managed Object
+        AaaRadiusProvider: managed object
 
     Raises:
-        UcsOperationError: If AaaRadiusProvider is not present
+        UcsOperationError: if AaaRadiusProvider is not present
 
     Example:
         radius_provider_modify(handle, name="test_radius_prov", timeout="5")
     """
-
     mo = radius_provider_get(handle, name, caller="radius_provider_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
@@ -146,18 +154,17 @@ def radius_provider_delete(handle, name):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): radius provider name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaRadiusProvider is not present
+        UcsOperationError: if AaaRadiusProvider is not present
 
     Example:
         radius_provider_delete(handle, name="test_radius_provider")
     """
-
     mo = radius_provider_get(handle, name, caller="radius_provider_delete")
     handle.remove_mo(mo)
     handle.commit()
@@ -165,25 +172,28 @@ def radius_provider_delete(handle, name):
 
 def radius_provider_group_create(handle, name, descr=None, **kwargs):
     """
-    Creates a radius provider group
+    creates a radius provider group
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): radius provider group name
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaProviderGroup: Managed Object
+        AaaProviderGroup: managed object
+
+    Raises:
+        None
 
     Example:
         radius_provider_group_create(handle, name="test_prov_grp")
     """
-
     from ucsmsdk.mometa.aaa.AaaProviderGroup import AaaProviderGroup
 
-    mo = AaaProviderGroup(parent_mo_or_dn=_base_dn, name=name, descr=descr)
+    mo = AaaProviderGroup(parent_mo_or_dn=_radius_dn, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, True)
     handle.commit()
@@ -193,20 +203,22 @@ def radius_provider_group_create(handle, name, descr=None, **kwargs):
 def radius_provider_group_get(handle, name,
                               caller="radius_provider_group_get"):
     """
-    Get radius provider group
+    gets radius provider group
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): radius provider group name
 
     Returns:
-        AaaProviderGroup: Managed Object OR None
+        AaaProviderGroup: managed object
+
+    Raises:
+        UcsOperationError: if AaaProviderGroup is not present
 
     Example:
         radius_provider_group_get(handle, name="test_prov_grp")
     """
-
-    dn = _base_dn + "/providergroup-" + name
+    dn = _radius_dn + "/providergroup-" + name
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller,
@@ -220,19 +232,23 @@ def radius_provider_group_exists(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): radius provider group name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaProviderGroup MO/None)
+
+    Raises:
+        None
 
     Example:
         radius_provider_group_exists(handle, name="test_prov_grp")
     """
     try:
-        mo = radius_provider_group_get(handle, name)
+        mo = radius_provider_group_get(handle, name,
+                                       caller="radius_provider_group_exists")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
@@ -245,18 +261,17 @@ def radius_provider_group_delete(handle, name):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): radius provider group name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaProviderGroup is not present
+        UcsOperationError: if AaaProviderGroup is not present
 
     Example:
         radius_provider_group_delete(handle, name="test_prov_grp")
     """
-
     mo = radius_provider_group_get(handle, name,
                                    caller="radius_provider_group_delete")
     handle.remove_mo(mo)
@@ -271,33 +286,34 @@ def radius_provider_group_add_provider(handle, group_name, name,
 
     Args:
         handle (UcsHandle)
-        group_name (string): group_name
-        name (string): name
+        group_name (string): radius provider group name
+        name (string): radius provider name
         order (string): order
+         valid values are "lowest-available" or "0-16"
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaProviderRef: Managed Object
+        AaaProviderRef: managed object
 
     Raises:
-        UcsOperationError: If AaaProviderGroup  or AaaProvider is not present
+        UcsOperationError: if AaaProviderGroup  or AaaProvider is not present
 
     Example:
         radius_provider_group_add_provider(
           handle, group_name="test_prov_grp", name="test_radius_prov")
     """
-
     from ucsmsdk.mometa.aaa.AaaProviderRef import AaaProviderRef
 
-    provider_group_mo = radius_provider_group_get(handle, group_name,
+    radius_provider = radius_provider_get(handle, name,
                                 caller="radius_provider_group_add_provider")
 
-    provider_mo = radius_provider_get(handle, name,
+    radius_provider_group = radius_provider_group_get(handle, group_name,
                                 caller="radius_provider_group_add_provider")
 
-    mo = AaaProviderRef(parent_mo_or_dn=provider_group_mo,
+    mo = AaaProviderRef(parent_mo_or_dn=radius_provider_group,
                         name=name,
                         order=order,
                         descr=descr)
@@ -310,34 +326,30 @@ def radius_provider_group_add_provider(handle, group_name, name,
 
 def radius_provider_group_provider_get(handle, group_name, name):
     """
-    Gets provider  under a radius provider group
+    gets provider  under a radius provider group
 
     Args:
         handle (UcsHandle)
-        group_name (string): group_name
-        name (string): name
+        group_name (string): radius provider group name
+        name (string): radius provider name
 
     Returns:
-        AaaProviderRef: Managed Object OR None
+        AaaProviderRef: managed object
 
     Raises:
-        UcsOperationError: If AaaProviderGroup  or AaaProvider is not present
+        UcsOperationError: if AaaProviderRef is not present
 
     Example:
         radius_provider_group_provider_get(handle,
                                     group_name="test_radius_provider_group",
                                     name="test_radius_provider")
     """
-
-    provider_group = radius_provider_group_get(handle, group_name,
-                                caller="radius_provider_group_provider_get")
-
-    provider_dn = provider_group.dn + "/provider-ref-" + name
-    mo = handle.query_dn(provider_dn)
+    provider_group_dn = _radius_dn + "/providergroup-" + group_name
+    provider_ref_dn = provider_group_dn + "/provider-ref-" + name
+    mo = handle.query_dn(provider_ref_dn)
     if mo is None:
         raise UcsOperationError(caller,
-                    "Tacacsplus Provider '%s' is not present under group " % (
-                    dn, provider_group.dn))
+            "Radius Provider Reference '%s' does not exist" % provider_ref_dn)
     return mo
 
 
@@ -347,24 +359,23 @@ def radius_provider_group_provider_exists(handle, group_name, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        group_name (string): group_name
-        name (string): name
+        group_name (string): radius provider group name
+        name (string): radius provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaProviderRef MO/None)
 
     Raises:
-        UcsOperationError: If AaaProviderGroup  or AaaProvider is not present
+        None
 
     Example:
         radius_provider_group_provider_exists(handle,
                                     group_name="test_radius_provider_group",
                                     name="test_radius_provider")
     """
-
     try:
         mo = radius_provider_group_provider_get(handle, group_name, name,
                             caller="radius_provider_group_provider_exists")
@@ -380,24 +391,23 @@ def radius_provider_group_modify_provider(handle, group_name, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        group_name (string): group_name
-        name (string): name
+        group_name (string): radius provider group name
+        name (string): radius provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        AaaProviderRef: Managed Object
+        AaaProviderRef: managed object
 
     Raises:
-        UcsOperationError: If AaaProviderRef is not present
+        UcsOperationError: if AaaProviderRef is not present
 
     Example:
         radius_provider_group_modify_provider(
           handle, group_name="test_prov_grp", name="test_radius_prov",
           order="2")
     """
-
     mo = radius_provider_group_provider_get(handle, group_name, name,
                             caller="radius_provider_group_modify_provider")
     mo.set_prop_multiple(**kwargs)
@@ -412,21 +422,20 @@ def radius_provider_group_remove_provider(handle, group_name, name):
 
     Args:
         handle (UcsHandle)
-        group_name (string): group_name
-        name (string): name
+        group_name (string): radius provider group name
+        name (string): radius provider name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaProviderRef is not present
+        UcsOperationError: if AaaProviderRef is not present
 
     Example:
         radius_provider_group_remove_provider(handle,
                                     group_name="test_radius_provider_group",
                                     name="test_radius_provider")
     """
-
     mo = radius_provider_group_provider_get(handle, group_name, name,
                                 caller="radius_provider_group_remove_provider")
     handle.remove_mo(mo)
