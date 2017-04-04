@@ -15,7 +15,7 @@
 This module performs the operation related to ldap.
 """
 from ucsmsdk.ucsexception import UcsOperationError
-from ..admin.locale import locale_exists
+from ..admin.locale import locale_get, locale_exists
 
 _ldap_dn = "sys/ldap-ext"
 
@@ -23,7 +23,7 @@ def ldap_configure(handle, timeout="30", attribute="CiscoAvPair",
                    filter="cn=$userid", retries="1", policy_owner = "local",
                    basedn=None, descr=None, **kwargs):
     """
-    Configure the ldap
+    Configures the ldap
 
     Args:
         handle (UcsHandle)
@@ -31,12 +31,13 @@ def ldap_configure(handle, timeout="30", attribute="CiscoAvPair",
         attribute (string): attribute
         filter (string): filter
         retries (string): retries
-        policy_owner (string): policy_owner
+        policy_owner (string): policy owner
+         valid values are "local", "pending-policy", "policy"
         basedn (string): basedn
-        descr (string): descr
+        descr (string): description
 
     Returns:
-        AaaLdapEp : Managed Object OR None
+        AaaLdapEp : managed object
 
     Example:
         ldap_configure(handle, timeout="40")
@@ -59,28 +60,6 @@ def ldap_configure(handle, timeout="30", attribute="CiscoAvPair",
     return mo
 
 
-def ldap_provider_get(handle, name, caller="ldap_provider_get"):
-    """
-    Gets the ldap provider
-
-    Args:
-        handle (UcsHandle)
-        name (string): name of ldap provider
-
-    Returns:
-        AaaLdapProvider : Managed Object OR None
-
-    Example:
-        ldap_provider_get(handle, name="test_ldap_provider")
-    """
-
-    dn = _ldap_dn + "/provider-" + name
-    mo = handle.query_dn(dn)
-    if mo is None:
-        raise UcsOperationError(caller, "Ldap Provider '%s' does not exist" % dn)
-    return mo
-
-
 def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
                          basedn="", port="389", enable_ssl="no", filter=None,
                          attribute=None, key=None, timeout="30",
@@ -91,30 +70,33 @@ def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
 
     Args:
         handle (UcsHandle)
-        name (string): name of ldap provider
+        name (string): name of ldap provider (Hostname/FQDN or IP Address)
         order (string): "lowest-available" or 0-16
         rootdn (string): rootdn
         basedn (string): basedn
         port (string): port
-        enable_ssl (string): enable_ssl
+        enable_ssl (string): enable ssl, "yes" or "no"
         filter (string): filter
         attribute (string): attribute
         key (string): key
         timeout (string): timeout
         vendor (string): vendor
+         valid values are "MS-AD", "OpenLdap"
         retries (string): retries
-        descr (string): descr
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        AaaLdapProvider : Managed Object
+        AaaLdapProvider : managed object
+
+    Raises:
+        None
 
     Example:
         ldap_provider_create(handle, name="test_ldap_prov", port="320",
                              order="3")
     """
-
     from ucsmsdk.mometa.aaa.AaaLdapProvider import AaaLdapProvider
 
     mo = AaaLdapProvider(parent_mo_or_dn=_ldap_dn,
@@ -138,6 +120,32 @@ def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
     return mo
 
 
+def ldap_provider_get(handle, name, caller="ldap_provider_get"):
+    """
+    Gets the ldap provider
+
+    Args:
+        handle (UcsHandle)
+        name (string): name of ldap provider
+        caller (string): name of the caller function
+
+    Returns:
+        AaaLdapProvider : managed object
+
+    Raises:
+        UcsOperationError: if AaaLdapProvider is not present
+
+    Example:
+        ldap_provider_get(handle, name="test_ldap_provider")
+    """
+    dn = _ldap_dn + "/provider-" + name
+    mo = handle.query_dn(dn)
+    if mo is None:
+        raise UcsOperationError(caller,
+                                "Ldap Provider '%s' does not exist" % dn)
+    return mo
+
+
 def ldap_provider_exists(handle, name, **kwargs):
     """
     checks if ldap provider exists
@@ -150,7 +158,10 @@ def ldap_provider_exists(handle, name, **kwargs):
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaLdapProvider MO/None)
+
+    Raises:
+        None
 
     Example:
         ldap_provider_exists(handle, name="test_ldap_provider")
@@ -178,12 +189,11 @@ def ldap_provider_modify(handle, name, **kwargs):
         AaaLdapProvider : Managed Object
 
     Raises:
-        UcsOperationError: If AaaLdapProvider is not present
+        UcsOperationError: if AaaLdapProvider is not present
 
     Example:
         ldap_provider_modify(handle, name="test_ldap_prov", enable_ssl="yes")
     """
-
     mo = ldap_provider_get(handle, name, "ldap_provider_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
@@ -203,12 +213,11 @@ def ldap_provider_delete(handle, name):
         None
 
     Raises:
-        UcsOperationError: If AaaLdapProvider is not present
+        UcsOperationError: if AaaLdapProvider is not present
 
     Example:
         ldap_provider_delete(handle, name="test_ldap_prov")
     """
-
     mo = ldap_provider_get(handle, name, "ldap_provider_delete")
     handle.remove_mo(mo)
     handle.commit()
@@ -218,7 +227,7 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
                                         authorization="enable",
                                         traversal="recursive",
                                         target_attr="memberOf",
-                                        use_primary_group="no",
+                                        use_primary_group=False,
                                         name=None,
                                         descr=None,
                                         **kwargs):
@@ -228,28 +237,34 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
     Args:
         handle (UcsHandle)
         ldap_provider_name (string): name of ldap provider
-        authorization (string): authorization
-        traversal (string): traversal
-        target_attr (string): target_attr
+        authorization (string): group authorization
+         valid values are "disable", "enable"
+        traversal (string): group recursion
+         valid values are "non-recursive", "recursive"
+        target_attr (string): target atribute
+        use_primary_group (bool): True or False
         name (string): name
-        descr (string): descr
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        AaaLdapGroupRule : Managed Object
+        AaaLdapGroupRule : managed object
+
+    Raises:
+        UcsOperationError: if AaaLdapProvider is not present
 
     Example:
-        ldap_provider_group_rules_configure(
-              handle,
-              ldap_provider_name="test_ldap_prov", authorization="enable")
+        ldap_provider_group_rules_configure( handle,
+                                        ldap_provider_name="test_ldap_prov",
+                                        authorization="enable")
     """
-
     from ucsmsdk.mometa.aaa.AaaLdapGroupRule import AaaLdapGroupRule
 
     obj = ldap_provider_get(handle, ldap_provider_name,
                             "ldap_provider_group_rules_configure")
 
+    use_primary_group = ("no", "yes")[use_primary_group]
     mo = AaaLdapGroupRule(parent_mo_or_dn=obj,
                           authorization=authorization,
                           traversal=traversal,
@@ -264,24 +279,23 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
     return mo
 
 
-def ldap_group_map_create(handle, name, descr=None, **kwargs):
+def ldap_group_create(handle, name, descr=None, **kwargs):
     """
     creates ldap group map
 
     Args:
         handle (UcsHandle)
-        name (string): name
-        descr (string): descr
+        name (string): ldap group name
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        AaaLdapGroup : Managed Object
+        AaaLdapGroup : managed object
 
     Example:
-        ldap_group_map_create(handle, name="test_ldap_grp_map")
+        ldap_group_create(handle, name="test_ldap_grp_map")
     """
-
     from ucsmsdk.mometa.aaa.AaaLdapGroup import AaaLdapGroup
 
     mo = AaaLdapGroup(parent_mo_or_dn=_ldap_dn, name=name, descr=descr)
@@ -291,21 +305,24 @@ def ldap_group_map_create(handle, name, descr=None, **kwargs):
     return mo
 
 
-def ldap_group_map_get(handle, name, caller="ldap_group_map_get"):
+def ldap_group_get(handle, name, caller="ldap_group_get"):
     """
     Gets ldap group map
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): ldap group name
+        caller (string): name of the caller function
 
     Returns:
-        AaaLdapGroup : Managed Object OR None
+        AaaLdapGroup : managed object
+
+    Raises:
+        UcsOperationError: if AaaLdapGroup is not present
 
     Example:
-        ldap_group_map_get(handle, name="test_ldap_group_map")
+        ldap_group_get(handle, name="test_ldap_group")
     """
-
     dn = _ldap_dn + "/ldapgroup-" + name
     mo = handle.query_dn(dn)
     if mo is None:
@@ -314,106 +331,114 @@ def ldap_group_map_get(handle, name, caller="ldap_group_map_get"):
     return mo
 
 
-def ldap_group_map_exists(handle, name, **kwargs):
+def ldap_group_exists(handle, name, **kwargs):
     """
     checks if ldap group map exists
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): ldap group map name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaLdapGroup MO/None)
 
     Example:
-        ldap_group_map_exists(handle, name="test_ldap_group_map")
+        ldap_group_exists(handle, name="test_ldap_group")
     """
     try:
-        mo = ldap_group_map_get(handle, name, "ldap_group_map_exists")
+        mo = ldap_group_get(handle, name, "ldap_group_exists")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
 
-def ldap_group_map_delete(handle, name):
+def ldap_group_delete(handle, name):
     """
-    removes ldap group map
+    deletes ldap group map
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): ldap group map name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaLdapGroup is not present
+        UcsOperationError: if AaaLdapGroup is not present
 
     Example:
-        ldap_group_map_delete(handle, name="test_ldap_grp_map")
+        ldap_group_delete(handle, name="test_ldap_grp_map")
     """
-
-    mo = ldap_group_map_get(handle, name, "ldap_group_map_delete")
+    mo = ldap_group_get(handle, name, "ldap_group_delete")
     handle.remove_mo(mo)
     handle.commit()
 
 
-def ldap_group_map_role_add(handle, ldap_group_map_name, name, descr=None,
+def ldap_group_role_add(handle, ldap_group_name, name, descr=None,
                             **kwargs):
     """
     add role to ldap group map
 
     Args:
         handle (UcsHandle)
-        ldap_group_map_name (string): name of ldap group
+        ldap_group_name (string): name of ldap group
         name (string):  role name
-        descr (string): descr
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        AaaUserRole : Managed Object
+        AaaUserRole : managed object
+
+    Raises:
+        UcsOperationError: if AaaLdapGroup or AaaRole is not present
 
     Example:
-        ldap_group_map_role_add(
-          handle, ldap_group_map_name="test_ldap_grp_map", name="storage")
+        ldap_group_role_add(
+          handle, ldap_group_name="test_ldap_grp_map", name="storage")
     """
-
     from ucsmsdk.mometa.aaa.AaaUserRole import AaaUserRole
+    from ..admin.role import role_get
 
-    obj = ldap_group_map_get(handle, name=ldap_group_map_name,
-                             caller="ldap_group_map_role_add")
-    mo = AaaUserRole(parent_mo_or_dn=obj, name=name, descr=descr)
+    role = role_get(handle, name=name)
+
+    ldap_group = ldap_group_get(handle, name=ldap_group_name,
+                                caller="ldap_group_role_add")
+
+    mo = AaaUserRole(parent_mo_or_dn=ldap_group, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, True)
     handle.commit()
     return mo
 
 
-def ldap_group_map_role_get(handle, ldap_group_map_name, name,
-                            caller="ldap_group_map_role_get"):
+def ldap_group_role_get(handle, ldap_group_name, name,
+                            caller="ldap_group_role_get"):
     """
     Gets the role  for the respective ldap group map
 
     Args:
         handle (UcsHandle)
-        ldap_group_map_name (string): name of ldap group
+        ldap_group_name (string): name of ldap group
         name (string):  role name
+        caller (string): name of the caller function
 
     Returns:
-        AaaUserRole : Managed Object OR None
+        AaaUserRole : managed object
+
+    Raise:
+        UcsOperationError: if AaaUserRole is not present
 
     Example:
-        ldap_group_map_role_get(handle,
-                                ldap_group_map_name="test_ldap_grp_map",
-                                name="test_role")
+        ldap_group_role_get(handle,
+                            ldap_group_name="test_ldap_grp_map",
+                            name="test_role")
     """
-
-    dn = _ldap_dn + "/ldapgroup-" + ldap_group_map_name + "/role-" + name
+    dn = _ldap_dn + "/ldapgroup-" + ldap_group_name + "/role-" + name
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller,
@@ -421,118 +446,125 @@ def ldap_group_map_role_get(handle, ldap_group_map_name, name,
     return mo
 
 
-def ldap_group_map_role_exists(handle, ldap_group_map_name, name, **kwargs):
+def ldap_group_role_exists(handle, ldap_group_name, name, **kwargs):
     """
     checks if role exists for the respective ldap group map
 
     Args:
         handle (UcsHandle)
-        ldap_group_map_name (string): name of ldap group
+        ldap_group_name (string): name of ldap group
         name (string):  role name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaUserRole MO/None)
+
+    Raises:
+        None
 
     Example:
-        ldap_group_map_role_exists(handle,
-                                   ldap_group_map_name="test_ldap_grp_map",
+        ldap_group_role_exists(handle,
+                                   ldap_group_name="test_ldap_grp_map",
                                    name="test_role")
     """
     try:
-        mo = ldap_group_map_role_get(handle, ldap_group_map_name, name,
-                                     caller="ldap_group_map_role_exists")
+        mo = ldap_group_role_get(handle, ldap_group_name, name,
+                                     caller="ldap_group_role_exists")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
 
-def ldap_group_map_role_remove(handle, ldap_group_map_name, name):
+def ldap_group_role_remove(handle, ldap_group_name, name):
     """
     removes role from the respective ldap group map
 
     Args:
         handle (UcsHandle)
-        ldap_group_map_name (string): name of ldap group
+        ldap_group_name (string): name of ldap group
         name (string):  role name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaUserRole is not present
+        UcsOperationError: if AaaUserRole is not present
 
     Example:
-        ldap_group_map_role_remove(handle,
-                                   ldap_group_map_name="test_ldap_grp_map",
-                                   name="test_role")
+        ldap_group_role_remove(handle,
+                               ldap_group_name="test_ldap_grp_map",
+                               name="test_role")
     """
-
-    mo = ldap_group_map_role_get(handle, ldap_group_map_name, name,
-                                 caller="ldap_group_map_role_remove")
+    mo = ldap_group_role_get(handle, ldap_group_name, name,
+                                 caller="ldap_group_role_remove")
     handle.remove_mo(mo)
     handle.commit()
 
 
-def ldap_group_map_locale_add(handle, ldap_group_map_name, name, descr=None,
-                            **kwargs):
+def ldap_group_locale_add(handle, ldap_group_name, name, descr=None,
+                          **kwargs):
     """
-    add locale to ldap group map
+    adds locale to ldap group map
 
     Args:
         handle (UcsHandle)
-        ldap_group_map_name (string): name of ldap group
+        ldap_group_name (string): name of ldap group
         name (string):  locale name
-        descr (string): descr
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        AaaUserLocale : Managed Object
+        AaaUserLocale : managed object
+
+    Raises:
+        UcsOperationError: if AaaLdapGroup or AaaLocale is not present
 
     Example:
-        ldap_group_map_locale_add(
-          handle, ldap_group_map_name="test_ldap_grp_map", name="locale1")
+        ldap_group_locale_add(
+          handle, ldap_group_name="test_ldap_grp_map", name="locale1")
     """
-
     from ucsmsdk.mometa.aaa.AaaUserLocale import AaaUserLocale
+    from ..admin.locale import locale_get
 
-    obj = ldap_grop_map_get(handle, name=ldap_group_map_name,
-                            caller="ldap_group_map_locale_add")
+    locale = locale_get(handle, name, caller="ldap_group_locale_add")
 
-    if not locale_exists(handle, name=name)[0]:
-        raise UcsOperationError("ldap_group_map_locale_add",
-                                 "Locale '%s' does not exist" % name)
+    ldap_group = ldap_group_get(handle, name=ldap_group_name,
+                         caller="ldap_group_locale_add")
 
-    mo = AaaUserLocale(parent_mo_or_dn=obj, name=name, descr=descr)
+    mo = AaaUserLocale(parent_mo_or_dn=ldap_group, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, True)
     handle.commit()
     return mo
 
 
-def ldap_group_map_locale_get(handle, ldap_group_map_name, name,
-                              caller="ldap_group_map_locale_get"):
+def ldap_group_locale_get(handle, ldap_group_name, name,
+                          caller="ldap_group_locale_get"):
     """
     Gets the locale for the respective ldap group map
 
     Args:
         handle (UcsHandle)
-        ldap_group_map_name (string): name of ldap group
+        ldap_group_name (string): name of ldap group
         name (string):  locale name
+        caller (string): name of the caller function
 
     Returns:
-        AaaUserLocale : Managed Object OR None
+        AaaUserLocale : managed object
+
+    Raises:
+        UcsOperationError: if AaaUserLocale is not present
 
     Example:
-        ldap_group_map_locale_get(handle,
-                                ldap_group_map_name="test_ldap_grp_map",
-                                name="locale1")
+        ldap_group_locale_get(handle,
+                              ldap_group_name="test_ldap_grp_map",
+                              name="locale1")
     """
-    dn = _ldap_dn + "/ldapgroup-" + ldap_group_map_name + "/locale-" + name
+    dn = _ldap_dn + "/ldapgroup-" + ldap_group_name + "/locale-" + name
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller,
@@ -540,62 +572,61 @@ def ldap_group_map_locale_get(handle, ldap_group_map_name, name,
     return mo
 
 
-def ldap_group_map_locale_exists(handle, ldap_group_map_name, name, **kwargs):
+def ldap_group_locale_exists(handle, ldap_group_name, name, **kwargs):
     """
     checks if locale exists for the respective ldap group map
 
     Args:
         handle (UcsHandle)
-        ldap_group_map_name (string): name of ldap group
+        ldap_group_name (string): name of ldap group
         name (string):  locale name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaUserLocale MO/None)
+
+    Raises:
+        None
 
     Example:
-        ldap_group_map_locale_exists(handle,
-                                   ldap_group_map_name="test_ldap_grp_map",
-                                   name="locale1")
+        ldap_group_locale_exists(handle,
+                                 ldap_group_name="test_ldap_grp_map",
+                                 name="locale1")
     """
     try:
-        mo = ldap_group_map_locale_get(handle, ldap_group_map_name, name,
-                                   caller="ldap_group_map_locale_exists")
+        mo = ldap_group_locale_get(handle, ldap_group_name, name,
+                                   caller="ldap_group_locale_exists")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
 
-def ldap_group_map_locale_remove(handle, ldap_group_map_name, name):
+def ldap_group_locale_remove(handle, ldap_group_name, name):
     """
     removes locale from the respective ldap group map
 
     Args:
         handle (UcsHandle)
-        ldap_group_map_name (string): name of ldap group
+        ldap_group_name (string): name of ldap group
         name (string):  locale name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaUserLocale is not present
+        UcsOperationError: if AaaUserLocale is not present
 
     Example:
-        ldap_group_map_locale_remove(handle,
-                                   ldap_group_map_name="test_ldap_grp_map",
-                                   name="locale1")
+        ldap_group_locale_remove(handle,
+                                 ldap_group_name="test_ldap_grp_map",
+                                 name="locale1")
     """
 
-    mo = ldap_group_map_locale_get(handle, ldap_group_map_name, name,
-                                   caller="ldap_group_map_locale_remove")
-
-    if not locale_get(handle, name=name)[0]:
-        raise UcsOperationError("ldap_group_map_locale_remove",
-                                 "Locale '%s' does not exist" % name)
+    mo = ldap_group_locale_get(handle, ldap_group_name, name,
+                               caller="ldap_group_locale_remove")
     handle.remove_mo(mo)
     handle.commit()
 
@@ -606,18 +637,20 @@ def ldap_provider_group_create(handle, name, descr=None, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name
-        descr (string): descr
+        name (string): ldap provider group name
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
     Returns:
-        AaaProviderGroup : Managed Object
+        AaaProviderGroup : managed object
+
+    Raises:
+        None
 
     Example:
-        ldap_provider_group_create(handle, name="test_ldap_group_map")
+        ldap_provider_group_create(handle, name="test_ldap_group")
     """
-
     from ucsmsdk.mometa.aaa.AaaProviderGroup import AaaProviderGroup
 
     mo = AaaProviderGroup(parent_mo_or_dn=_ldap_dn,
@@ -636,13 +669,17 @@ def ldap_provider_group_get(handle, name, caller="ldap_provider_group_get"):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): ldap provider group name
+        caller (string): name of the caller function
 
     Returns:
-        AaaProviderGroup : Managed Object OR None
+        AaaProviderGroup : managed object
+
+    Raises:
+        UcsOperationError: if AaaProviderGroup is not present
 
     Example:
-        ldap_provider_group_get(handle, name="test_ldap_group_map")
+        ldap_provider_group_get(handle, name="test_ldap_group")
     """
     dn = _ldap_dn + "/providergroup-" + name
     mo = handle.query_dn(dn)
@@ -658,16 +695,19 @@ def ldap_provider_group_exists(handle, name, **kwargs):
 
     Args:
         handle (UcsHandle)
-        name (string): name
+        name (string): ldap provider group name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaProviderGroup MO/None)
+
+    Raises:
+        None
 
     Example:
-        ldap_provider_group_exists(handle, name="test_ldap_group_map")
+        ldap_provider_group_exists(handle, name="test_ldap_group")
     """
     try:
         mo = ldap_provider_group_get(handle, name,
@@ -684,19 +724,17 @@ def ldap_provider_group_delete(handle, name):
 
     Args:
         handle (UcsHandle)
-        name (string): name
-        descr (string): descr
+        name (string): ldap provider group name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaProviderGroup is not present
+        UcsOperationError: if AaaProviderGroup is not present
 
     Example:
-        ldap_provider_group_delete(handle, name="test_ldap_group_map")
+        ldap_provider_group_delete(handle, name="test_ldap_group")
     """
-
     mo = ldap_provider_group_get(handle, name,
                                  caller="ldap_provider_group_delete")
     handle.remove_mo(mo)
@@ -712,46 +750,40 @@ def ldap_provider_group_provider_add(handle, group_name, name,
     Args:
         handle (UcsHandle)
         group_name (string): ldap provider group name
-        name (string): name
+        name (string): ldap provider name
         order (string): order
-        descr (string): descr
+         valid values are "lowest-available" or "0-16"
+        descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
+
     Returns:
-        AaaProviderRef : Managed Object
+        AaaProviderRef : managed object
 
     Raises:
-        UcsOperationError: If AaaProviderGroup or AaaProvider is not present
+        UcsOperationError: if AaaProviderGroup or AaaProvider is not present
 
     Example:
         ldap_provider_group_provider_add(handle,
                                         group_name="test_ldap_provider_group",
-                                        name="test_provider",
+                                        name="test_ldap_provider",
                                         order="1")
     """
-
     from ucsmsdk.mometa.aaa.AaaProviderRef import AaaProviderRef
 
-    group_dn = _base_dn + "/ldap-ext/providergroup-" + group_name
-    group_mo = handle.query_dn(group_dn)
-    if not group_mo:
-        raise UcsOperationError("ldap_provider_group_provider_add",
-                                 "Ldap Provider Group does not exist.")
+    ldap_provider = ldap_provider_get(handle, name=name,
+                                    caller="ldap_provider_group_provider_add")
 
-    provider_dn = _base_dn + "/ldap-ext/provider-" + name
-    provider_mo = handle.query_dn(provider_dn)
-    if not provider_mo:
-        raise UcsOperationError("ldap_provider_group_provider_add",
-                                 "Ldap Provider does not exist.")
+    ldap_provider_group = ldap_provider_group_get(handle, name=group_name,
+                                    caller="ldap_provider_group_provider_add")
 
-    mo = AaaProviderRef(parent_mo_or_dn=group_mo,
+    mo = AaaProviderRef(parent_mo_or_dn=ldap_provider_group,
                         name=name,
                         order=order,
                         descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-
     handle.add_mo(mo, True)
     handle.commit()
     return mo
@@ -765,23 +797,26 @@ def ldap_provider_group_provider_get(handle, group_name, name,
     Args:
         handle (UcsHandle)
         group_name (string): ldap provider group name
-        name (string): name
+        name (string): ldap provider name
+        caller (string): name of the caller function
 
     Returns:
-        AaaProviderRef : Managed Object OR None
+        AaaProviderRef : managed object
+
+    Raises:
+        UcsOperationError: if AaaProviderRef is not present
 
     Example:
         ldap_provider_group_provider_get(handle,
                                          group_name="test_ldap_provider_group",
-                                         name="test_provider",
-                                         order="1")
+                                         name="test_provider")
     """
     provider_group_dn = _ldap_dn+ "providergroup-" + group_name
-    provider_dn = provider_group_dn + "/provider-ref-" + name
-    mo = handle.query_dn(provider_dn)
+    provider_ref_dn = provider_group_dn + "/provider-ref-" + name
+    mo = handle.query_dn(provider_ref_dn)
     if mo is None:
         raise UcsOperationError(caller,
-                                "Ldap Provider '%s' does not exist" % dn)
+            "Ldap Provider Reference '%s' does not exist" % provider_ref_dn)
     return mo
 
 
@@ -792,19 +827,20 @@ def ldap_provider_group_provider_exists(handle, group_name, name, **kwargs):
     Args:
         handle (UcsHandle)
         group_name (string): ldap provider group name
-        name (string): name
+        name (string): ldap provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        (True/False, MO/None)
+        (True/False, AaaProviderRef MO/None)
+
+    Raises:
+        None
 
     Example:
         ldap_provider_group_provider_exists(handle,
-                                            group_name="test_ldap_provider_group",
-                                            name="test_provider",
-                                            order="1")
+                group_name="test_ldap_provider_group", name="test_provider")
     """
     try:
         mo = ldap_provider_group_provider_get(handle, group_name, name,
@@ -822,24 +858,23 @@ def ldap_provider_group_provider_modify(handle, group_name, name, **kwargs):
     Args:
         handle (UcsHandle)
         group_name (string): ldap provider group name
-        name (string): name
+        name (string): ldap provider name
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
 
     Returns:
-        True/False
+        AaaProviderRef : managed object
 
     Raises:
-        AaaProviderRef : Managed Object
+        UcsOperationError: if AaaProviderRef is not present
 
     Example:
         ldap_provider_group_provider_modify(handle,
-                                            group_name="test_ldap_provider_group",
-                                            name="test_provider",
-                                            order="1")
+                                         group_name="test_ldap_provider_group",
+                                         name="test_provider",
+                                         order="1")
     """
-
     mo = ldap_provider_group_provider_get(handle, group_name, name,
                                 caller="ldap_provider_group_provider_modify")
     mo.set_prop_multiple(**kwargs)
@@ -855,18 +890,18 @@ def ldap_provider_group_provider_remove(handle, group_name, name):
     Args:
         handle (UcsHandle)
         group_name (string): ldap provider group name
-        name (string): name
+        name (string): ldap provider name
 
     Returns:
         None
 
     Raises:
-        UcsOperationError: If AaaProviderRef is not present
+        UcsOperationError: if AaaProviderRef is not present
 
     Example:
         ldap_provider_group_provider_remove(handle,
-                                            group_name="test_ldap_provider_group",
-                                            name="test_provider")
+                                         group_name="test_ldap_provider_group",
+                                         name="test_provider")
     """
     mo = ldap_provider_group_provider_get(handle, group_name, name,
                                 caller="ldap_provider_group_provider_remove")
