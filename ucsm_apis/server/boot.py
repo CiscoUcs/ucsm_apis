@@ -26,8 +26,8 @@ def boot_policy_create(handle, name, org_dn="org-root",
 
     Args:
         handle (UcsHandle)
-        name (string): Name of the boot policy.
-        org_dn (string): Org DN.
+        name (string): boot policy name
+        org_dn (string): org dn
         reboot_on_update (string): valid values are "yes", "no"
         enforce_vnic_name (string): valid values are "yes", "no"
         boot_mode (string): "legacy" or "uefi"
