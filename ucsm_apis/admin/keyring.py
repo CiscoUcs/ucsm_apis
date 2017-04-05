@@ -19,7 +19,7 @@ from ucsmsdk.ucsexception import UcsOperationError
 _keyring_base_dn = "sys/pki-ext"
 _tp_base_dn = "sys/pki-ext"
 
-def key_ring_create(handle, name, modulus="mod2048", regen=False,
+def key_ring_create(handle, name, modulus="mod2048", regen="no",
                     policy_owner="local", tp=None, cert=None, descr=None,
                     **kwargs):
     """
@@ -31,7 +31,7 @@ def key_ring_create(handle, name, modulus="mod2048", regen=False,
         modulus (string): modulus
          valid values are "mod2048", "mod2560", "mod3072", "mod3584",
           "mod4096", "modinvalid"
-        regen (bool): regen, True/False
+        regen (string): regen, valid values are "yes" and "no"
         policy_owner (string): policy owner
          valid values are "local", "pending-policy", "policy"
         tp (string): trusted point name
@@ -48,11 +48,9 @@ def key_ring_create(handle, name, modulus="mod2048", regen=False,
         None
 
     Example:
-        key_ring = key_ring_create(handle, name="mykeyring", regen=True)
+        key_ring = key_ring_create(handle, name="mykeyring", regen="yes")
     """
     from ucsmsdk.mometa.pki.PkiKeyRing import PkiKeyRing
-
-    regen = ("no", "yes")[regen]
 
     mo = PkiKeyRing(parent_mo_or_dn=_keyring_base_dn,
                     name=name,
@@ -141,7 +139,7 @@ def key_ring_modify(handle, name, **kwargs):
         UcsOperationError: if PkiKeyRing is not present
 
     Example:
-        key_ring = key_ring_modify(handle, name="mykeyring", regen=False)
+        key_ring = key_ring_modify(handle, name="mykeyring", regen="no")
     """
     mo = key_ring_get(handle, name, caller="key_ring_modify")
     mo.set_prop_multiple(**kwargs)

@@ -61,7 +61,7 @@ def ldap_configure(handle, timeout="30", attribute="CiscoAvPair",
 
 
 def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
-                         basedn="", port="389", enable_ssl=False, filter=None,
+                         basedn="", port="389", enable_ssl="no", filter=None,
                          attribute=None, key=None, timeout="30",
                          vendor="OpenLdap", retries="1",
                          descr=None, **kwargs):
@@ -75,7 +75,7 @@ def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
         rootdn (string): rootdn
         basedn (string): basedn
         port (string): port
-        enable_ssl (bool): enable ssl, True/False
+        enable_ssl (string): enable ssl, valid valies are "yes", "no"
         filter (string): filter
         attribute (string): attribute
         key (string): key
@@ -98,8 +98,6 @@ def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
                              order="3")
     """
     from ucsmsdk.mometa.aaa.AaaLdapProvider import AaaLdapProvider
-
-    enable_ssl = ("no", "yes")[enable_ssl]
 
     mo = AaaLdapProvider(parent_mo_or_dn=_ldap_dn,
                          name=name,
@@ -194,7 +192,7 @@ def ldap_provider_modify(handle, name, **kwargs):
         UcsOperationError: if AaaLdapProvider is not present
 
     Example:
-        ldap_provider_modify(handle, name="test_ldap_prov", enable_ssl=True)
+        ldap_provider_modify(handle, name="test_ldap_prov", enable_ssl="yes")
     """
     mo = ldap_provider_get(handle, name, "ldap_provider_modify")
     mo.set_prop_multiple(**kwargs)
@@ -229,7 +227,7 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
                                         authorization="enable",
                                         traversal="recursive",
                                         target_attr="memberOf",
-                                        use_primary_group=False,
+                                        use_primary_group="no",
                                         name=None,
                                         descr=None,
                                         **kwargs):
@@ -244,7 +242,7 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
         traversal (string): group recursion
          valid values are "non-recursive", "recursive"
         target_attr (string): target atribute
-        use_primary_group (bool): True or False
+        use_primary_group (string): valid values are "yes", "no"
         name (string): name
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -266,7 +264,6 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
     obj = ldap_provider_get(handle, ldap_provider_name,
                             "ldap_provider_group_rules_configure")
 
-    use_primary_group = ("no", "yes")[use_primary_group]
     mo = AaaLdapGroupRule(parent_mo_or_dn=obj,
                           authorization=authorization,
                           traversal=traversal,

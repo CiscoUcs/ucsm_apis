@@ -43,7 +43,7 @@ def snmp_config_get(handle, caller="snmp_config_get"):
     return mo
 
 
-def snmp_enable(handle, policy_owner="local", is_set_snmp_secure=False,
+def snmp_enable(handle, policy_owner="local", is_set_snmp_secure="no",
                 descr="SNMP Service", community=None, sys_contact=None,
                 sys_location=None, **kwargs):
     """
@@ -53,7 +53,7 @@ def snmp_enable(handle, policy_owner="local", is_set_snmp_secure=False,
         handle (UcsHandle)
         policy_owner (string): policy owner
          valid values are "local", "pending-policy", "policy"
-        is_set_snmp_secure (bool): True/False
+        is_set_snmp_secure (string): valid values are "yes", "no"
         descr (string): description
         community (string): community
         sys_contact (string): system contact
@@ -77,8 +77,6 @@ def snmp_enable(handle, policy_owner="local", is_set_snmp_secure=False,
 
     """
     from ucsmsdk.mometa.comm.CommSnmp import CommSnmpConsts
-
-    is_set_snmp_secure = ("no", "yes")[is_set_snmp_secure]
 
     mo = snmp_config_get(handle, caller="snmp_enable")
 
@@ -285,7 +283,7 @@ def snmp_trap_remove(handle, hostname):
     handle.commit()
 
 
-def snmp_user_add(handle, name, pwd, auth="md5", use_aes=False,
+def snmp_user_add(handle, name, pwd, auth="md5", use_aes="no",
                   privpwd=None, descr=None, **kwargs):
     """
     Adds snmp user.
@@ -296,7 +294,7 @@ def snmp_user_add(handle, name, pwd, auth="md5", use_aes=False,
         pwd (string): password, minimum 8 character
         auth (string): auth type
          valid values are "md5", "sha"
-        use_aes (bool): Use AES-128, True/False
+        use_aes (string): Use AES-128, valid values are "yes", "no"
         privpwd (string): privacy password
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -314,8 +312,6 @@ def snmp_user_add(handle, name, pwd, auth="md5", use_aes=False,
                       privpwd="password", auth="sha")
     """
     from ucsmsdk.mometa.comm.CommSnmpUser import CommSnmpUser
-
-    use_aes = ("no", "yes")[use_aes]
 
     mo = CommSnmpUser(
         parent_mo_or_dn=_base_dn + "/snmp-svc",
@@ -406,7 +402,7 @@ def snmp_user_modify(handle, name, **kwargs):
     Example:
         snmp_user_modify(handle, name="snmpuser", descr=None,
                           pwd="password", privpwd="password",
-                          auth="md5", use_aes=False)
+                          auth="md5", use_aes="no")
     """
     mo = snmp_user_get(handle, name, caller="snmp_user_modify")
     mo.set_prop_multiple(**kwargs)

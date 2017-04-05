@@ -653,7 +653,7 @@ def call_home_system_inventory_configure(handle,
                                          poll_interval_seconds="300",
                                          retry_delay_minutes="10",
                                          minimum_send_now_interval_seconds="5",
-                                         send_now=False,
+                                         send_now="no",
                                          **kwargs):
     """
     Configures callhome system inventory
@@ -668,7 +668,7 @@ def call_home_system_inventory_configure(handle,
         poll_interval_seconds (string): poll interval in seconds
         retry_delay_minutes (string): retry after 'n' minutes
         minimum_send_now_interval_seconds (string): minimum send interval
-        send_now (bool): send inventory now, True/False
+        send_now (string): send inventory now, valid values are "yes", "no"
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
@@ -687,8 +687,6 @@ def call_home_system_inventory_configure(handle,
     if mo is None:
         raise UcsOperationError("call_home_system_inventory_configure",
                         "Callhome system inventory '%s' does not exist." % dn)
-
-    send_now = ("no", "yes")[send_now]
 
     args = {
         'admin_state': admin_state,
@@ -738,13 +736,13 @@ def call_home_system_inventory_send_now(handle):
     return mo
 
 
-def call_home_anonymous_reporting_on(handle, user_acknowledged=True):
+def call_home_anonymous_reporting_on(handle, user_acknowledged="yes"):
     """
     Sets anonymous reporting 'on'
 
     Args:
         handle (UcsHandle)
-        user_acknowledged (bool): True or False
+        user_acknowledged (string): valid values are "yes", "no"
 
     Returns:
         CallhomeAnonymousReporting : ManagedObject
@@ -761,23 +759,23 @@ def call_home_anonymous_reporting_on(handle, user_acknowledged=True):
         raise UcsOperationError("call_home_anonymous_reporting_on",
                     "Callhome Anonymous Reporting '%s' does not exist." % dn)
 
-    user_acknowledged = ("no", "yes")[user_acknowledged]
+    args = {'admin_state': "on",
+            'user_acknowledged': user_acknowledged
+            }
 
-    mo.admin_state="on"
-    mo.user_acknowledged=user_acknowledged
-
+    mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
     return mo
 
 
-def call_home_anonymous_reporting_off(handle, user_acknowledged=True):
+def call_home_anonymous_reporting_off(handle, user_acknowledged="yes"):
     """
     Sets anonymous reporting 'off'
 
     Args:
         handle (UcsHandle)
-        user_acknowledged (bool): True or False
+        user_acknowledged (string): valid values are "yes", "no"
 
     Returns:
         CallhomeAnonymousReporting : ManagedObject
@@ -794,11 +792,11 @@ def call_home_anonymous_reporting_off(handle, user_acknowledged=True):
         raise UcsOperationError("call_home_anonymous_reporting_off",
                     "Callhome Anonymous Reporting '%s' does not exist." % dn)
 
-    user_acknowledged = ("no", "yes")[user_acknowledged]
+    args = {'admin_state': "off",
+            'user_acknowledged': user_acknowledged
+            }
 
-    mo.admin_state="off"
-    mo.user_acknowledged=user_acknowledged
-
+    mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
     return mo

@@ -18,10 +18,10 @@ from ucsmsdk.ucsexception import UcsOperationError
 
 _base_dn = "sys/user-ext"
 
-def user_create(handle, name, pwd=None, clear_pwd_history=False,
+def user_create(handle, name, pwd=None, clear_pwd_history="no",
                 pwd_life_time="no-password-expire", account_status="active",
-                expires=False, expiration="never",
-                enc_pwd_set=False, enc_pwd=None,
+                expires="no", expiration="never",
+                enc_pwd_set="no", enc_pwd=None,
                 first_name=None, last_name=None,
                 phone=None, email=None, descr=None,
                 **kwargs):
@@ -32,14 +32,14 @@ def user_create(handle, name, pwd=None, clear_pwd_history=False,
         handle (UcsHandle)
         name (string): user name
         pwd (string): password
-        clear_pwd_history (bool): clear password history, True/False
+        clear_pwd_history (string): clear password history, "yes" or "no"
         pwd_life_time (string): password life time
          valid values are "no-password-expire" or "0-3650" days
         account_status (string): account status
          valid values are "active", "inactive"
-        expires (bool): expires, True/False
+        expires (string): expires, valid values are "yes", "no"
         expiration (string): expiration
-        enc_pwd_set (bool): True/False
+        enc_pwd_set (string): valid values are "yes", "no"
         enc_pwd (string): encrypted password
         first_name (string): first name
         last_name (string): last name
@@ -60,16 +60,12 @@ def user_create(handle, name, pwd=None, clear_pwd_history=False,
         user_create(handle, name="test", first_name="firstname",
                   last_name="lastname", descr=None, clear_pwd_history="no",
                   phone="+91-1234567890", email="test@cisco.com",
-                  pwd="p@ssw0rd", expires=True,
+                  pwd="p@ssw0rd", expires="yes",
                   pwd_life_time="no-password-expire",
                   expiration="2016-01-13T00:00:00", enc_pwd=None,
                   account_status="active")
     """
     from ucsmsdk.mometa.aaa.AaaUser import AaaUser
-
-    clear_pwd_history = ("no", "yes")[clear_pwd_history]
-    expires = ("no", "yes")[expires]
-    enc_pwd_set = ("no", "yes")[enc_pwd_set]
 
     mo = AaaUser(parent_mo_or_dn=_base_dn,
                  name=name,
@@ -139,7 +135,7 @@ def user_exists(handle, name, **kwargs):
         user_exists(handle, name="test", first_name="firstname",
                   last_name="lastname", descr=None, clear_pwd_history="no",
                   phone="+91-1234567890", email="test@cisco.com",
-                  expires=True,
+                  expires="yes",
                   pwd_life_time="no-password-expire",
                   expiration="2016-01-13T00:00:00", enc_pwd=None,
                   account_status="active")
@@ -173,7 +169,7 @@ def user_modify(handle, name, **kwargs):
         user_modify(handle, name="test", first_name="firstname",
                   last_name="lastname", descr=None, clear_pwd_history="no",
                   phone="+91-1234567890", email="test@cisco.com",
-                  expires=True,
+                  expires="yes",
                   pwd_life_time="no-password-expire",
                   expiration="2016-01-13T00:00:00", enc_pwd=None,
                   account_status="active")
