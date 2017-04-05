@@ -56,7 +56,7 @@ def boot_policy_create(handle, name, org_dn="org-root",
 
     obj = handle.query_dn(org_dn)
     if not obj:
-        raise UcscOperationError("boot_policy_create", "Org '%s' does not \
+        raise UcsOperationError("boot_policy_create", "Org '%s' does not \
                                  exist" % org_dn)
 
     mo = LsbootPolicy(parent_mo_or_dn=obj, name=name,
