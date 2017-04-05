@@ -57,10 +57,18 @@ def test_006_boot_policy_modify_descr_empty():
 
 
 def test_007_boot_policy_modify_descr_default():
-    boot_policy_modify(handle, name=boot_policy_name, descr="default")
+    boot_policy_modify(handle, name=boot_policy_name, boot_mode="uefi")
 
 
-def test_008_boot_policy_delete_default():
+def test_008_boot_policy_boot_security_enable():
+    boot_security_enable(handle, name=boot_policy_name)
+
+
+def test_009_boot_policy_boot_security_disable():
+    boot_security_disable(handle, name=boot_policy_name)
+
+
+def test_boot_policy_delete_default():
     boot_policy_delete(handle, name=boot_policy_name)
 
 

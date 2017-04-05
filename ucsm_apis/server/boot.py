@@ -189,6 +189,67 @@ def boot_policy_delete(handle, name, org_dn="org-root"):
     handle.commit()
 
 
+def _boot_security_configure(handle, name, org_dn, secure_boot):
+    from ucsmsdk.mometa.lsboot.LsbootBootSecurity import LsbootBootSecurity
+
+    boot_policy = boot_policy_get(handle, name, org_dn,
+                                  caller="boot_security_enable")
+    if boot_policy.boot_mode != "uefi":
+        raise UcsOperationError("boot_security_enable",
+            "boot mode should be equal to 'uefi' to configure boot security")
+
+    LsbootBootSecurity(parent_mo_or_dn=boot_policy, secure_boot=secure_boot)
+    handle.set_mo(boot_policy)
+    handle.commit()
+    return boot_policy
+
+
+def boot_security_enable(handle, name, org_dn="org-root"):
+    """
+    enables boot security of boot policy
+
+    Args:
+        handle (UcsHandle)
+        name (string): boot policy name
+        org_dn (string): org dn
+
+    Returns:
+        LsbootPolicy: managed object
+
+    Raises:
+        UcsOperationError: if LsbootPolicy is not present or
+                           LsbootPolicy 'boot_mode' != 'uefi'
+
+    Example:
+        boot_security_enable(handle, name="sample_boot",
+                             org_dn="org-root/org-test")
+    """
+    return _boot_security_configure(handle, name, org_dn, secure_boot="yes")
+
+
+def boot_security_disable(handle, name, org_dn="org-root"):
+    """
+    disables boot security of boot policy
+
+    Args:
+        handle (UcsHandle)
+        name (string): boot policy name
+        org_dn (string): org dn
+
+    Returns:
+        LsbootPolicy: managed object
+
+    Raises:
+        UcsOperationError: if LsbootPolicy is not present or
+                           LsbootPolicy 'boot_mode' != 'uefi'
+
+    Example:
+        boot_security_disable(handle, name="sample_boot",
+                             org_dn="org-root/org-test")
+    """
+    return _boot_security_configure(handle, name, org_dn, secure_boot="no")
+
+
 def _local_lun_add(parent_mo, order, lun_name=None, type=None):
     from ucsmsdk.mometa.lsboot.LsbootLocalHddImage import LsbootLocalHddImage
     from ucsmsdk.mometa.lsboot.LsbootLocalLunImagePath import \
