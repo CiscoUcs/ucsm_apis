@@ -35,7 +35,7 @@ def test_001_boot_policy_delete_bpnotexist():
 
 
 def test_002_boot_policy_exist_bpnotexist():
-    (status, mo) = boot_policy_exist(handle, name=boot_policy_name)
+    (status, mo) = boot_policy_exists(handle, name=boot_policy_name)
     assert not status
 
 
@@ -44,7 +44,7 @@ def test_003_boot_policy_create_default():
 
 
 def test_004_boot_policy_exist_default():
-    (status, mo) = boot_policy_exist(handle, name=boot_policy_name)
+    (status, mo) = boot_policy_exists(handle, name=boot_policy_name)
     assert status
 
 

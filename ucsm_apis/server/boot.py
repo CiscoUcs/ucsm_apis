@@ -10,80 +10,48 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-import logging
-log = logging.getLogger('ucs')
-
+"""
+This module performs the operation related to boot.
+"""
 from ucsmsdk import ucsgenutils
 from ucsmsdk.ucsexception import UcsOperationError
 from ucsmsdk.ucscoreutils import load_class
 
-
-def boot_policy_get(handle, name, org_dn="org-root", caller="boot_policy_get"):
-    """
-    This method fetches boot policy.
-
-    Args:
-        handle (UcsHandle)
-        name (string): Name of the boot policy.
-        org_dn (string): Org DN.
-        caller (string): Name of the caller method.
-
-    Returns:
-        LsbootPolicy: Managed Object
-
-    Raises:
-        UcsOperationError
-
-    Example:
-_       boot_policy_get(handle,
-                        name="sample_boot",
-                        org_dn="org-root/org-finance",
-                        caller="boot_policy_modify")
-    """
-
-    dn = org_dn + "/boot-policy-" + name
-    mo = handle.query_dn(dn)
-    if mo is None:
-        raise UcsOperationError(caller, "BootPolicy '%s' does not exist" % dn)
-    return mo
-
-
 def boot_policy_create(handle, name, org_dn="org-root",
-                       reboot_on_update=False, enforce_vnic_name=True,
+                       reboot_on_update="no", enforce_vnic_name="yes",
                        boot_mode="legacy", policy_owner="local",
                        descr=None, **kwargs):
     """
-    This method creates boot policy.
+    creates boot policy
 
     Args:
         handle (UcsHandle)
         name (string): Name of the boot policy.
         org_dn (string): Org DN.
-        reboot_on_update (bool): True/False. Default False.
-        enforce_vnic_name (bool): True/False. Default True.
+        reboot_on_update (string): valid values are "yes", "no"
+        enforce_vnic_name (string): valid values are "yes", "no"
         boot_mode (string): "legacy" or "uefi"
         policy_owner (string): "local" or "pending-policy" or  "policy"
         descr (string): Basic description.
+        **kwargs: Any additional key-value pair of managed object(MO)'s
+                  property and value, which are not part of regular args.
+                  This should be used for future version compatibility.
 
     Returns:
-        LsbootPolicy: Managed Object
+        LsbootPolicy: managed object
 
     Raises:
-        UcsOperationError
+        UcsOperationError: if OrgOrg is not present
 
     Example:
         boot_policy_create(handle,
                            name="sample_boot",
                            org_dn="org-root/org-finance",
-                           reboot_on_update=True,
-                           enforce_vnic_name=True,
+                           reboot_on_update="yes",
+                           enforce_vnic_name="yes",
                            boot_mode="legacy",
                            descr="sample description")
-
     """
-
     from ucsmsdk.mometa.lsboot.LsbootPolicy import LsbootPolicy
 
     obj = handle.query_dn(org_dn)
@@ -91,8 +59,6 @@ def boot_policy_create(handle, name, org_dn="org-root",
         raise UcscOperationError("boot_policy_create", "Org '%s' does not \
                                  exist" % org_dn)
 
-    reboot_on_update = ("no", "yes")[reboot_on_update]
-    enforce_vnic_name = ("no", "yes")[enforce_vnic_name]
     mo = LsbootPolicy(parent_mo_or_dn=obj, name=name,
                       reboot_on_update=reboot_on_update,
                       enforce_vnic_name=enforce_vnic_name,
@@ -101,33 +67,95 @@ def boot_policy_create(handle, name, org_dn="org-root",
                       descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, modify_present=True)
+    handle.add_mo(mo, True)
     handle.commit()
     return mo
 
 
-def boot_policy_modify(handle, name, org_dn="org-root", **kwargs):
+def boot_policy_get(handle, name, org_dn="org-root", caller="boot_policy_get"):
     """
-    This method modifies boot policy.
+    gets boot policy.
 
     Args:
         handle (UcsHandle)
-        name (string): Name of the boot policy.
-        org_dn (string): Org Dn.
+        name (string): boot policy name
+        org_dn (string): org dn
+        caller (string): caller method name
 
     Returns:
-        LsbootPolicy: Managed Object
+        LsbootPolicy: managed object
 
     Raises:
-        UcsOperationError
+        UcsOperationError: if LsbootPolicy is not present
+
+    Example:
+_       boot_policy_get(handle,
+                        name="sample_boot",
+                        org_dn="org-root/org-finance",
+                        caller="boot_policy_modify")
+    """
+    dn = org_dn + "/boot-policy-" + name
+    mo = handle.query_dn(dn)
+    if mo is None:
+        raise UcsOperationError(caller, "BootPolicy '%s' does not exist" % dn)
+    return mo
+
+
+def boot_policy_exists(handle, name, org_dn="org-root", **kwargs):
+    """
+    checks if boot policy exist
+
+    Args:
+        handle (UcsHandle)
+        name (string): boot policy name
+        org_dn (string): org dn
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, LsbootPolicy MO/None)
+
+    Raises:
+        None
+
+    Example:
+        boot_policy_exists(handle, name="sample_boot",
+                          org_dn="org-root/org-finance")
+    """
+    try:
+        mo = boot_policy_get(handle=handle, name=name, org_dn=org_dn,
+                             caller="boot_policy_exists")
+    except UcsOperationError:
+        return (False, None)
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
+def boot_policy_modify(handle, name, org_dn="org-root", **kwargs):
+    """
+    modifies boot policy.
+
+    Args:
+        handle (UcsHandle)
+        name (string): boot policy name
+        org_dn (string): org dn
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        LsbootPolicy: managed object
+
+    Raises:
+        UcsOperationError: if LsbootPolicy is not present
 
     Example:
         boot_policy_modify(handle, name="sample_boot",
                            org_dn="org-root/org-test",
-                           reboot_on_update=True,
+                           reboot_on_update="yes",
                            boot_mode="legacy")
     """
-
     mo = boot_policy_get(handle=handle, name=name, org_dn=org_dn,
                          caller="boot_policy_modify")
     mo.set_prop_multiple(**kwargs)
@@ -138,55 +166,27 @@ def boot_policy_modify(handle, name, org_dn="org-root", **kwargs):
 
 def boot_policy_delete(handle, name, org_dn="org-root"):
     """
-    This method removes boot policy.
+    deletes boot policy
 
     Args:
         handle (UcsHandle)
-        org_name (string): Name of the organization
-        name (string): Name of the boot policy.
-        org_dn (string): Org Dn.
+        name (string): boot policy name
+        org_dn (string): org dn
 
     Returns:
         None
 
     Raises:
-        UcsOperationError
+        UcsOperationError: if LsbootPolicy is not present
 
     Example:
-        boot_policy_remove(handle, name="sample_boot",
+        boot_policy_delete(handle, name="sample_boot",
                            org_dn="org-root/org-test")
     """
-
     mo = boot_policy_get(handle=handle, name=name, org_dn=org_dn,
                          caller="boot_policy_delete")
     handle.remove_mo(mo)
     handle.commit()
-
-
-def boot_policy_exist(handle, name, org_dn="org-root", **kwargs):
-    """
-    checks if boot policy exist
-
-    Args:
-        handle (UcsHandle)
-        name (string): Name of the boot policy.
-        org_dn (string): Org DN.
-
-    Returns:
-        True/False: Boolean
-
-    Example:
-        boot_policy_exist(handle, name="sample_boot",
-                          org_dn="org-root/org-finance")
-    """
-
-    try:
-        mo = boot_policy_get(handle=handle, name=name, org_dn=org_dn,
-                             caller="boot_policy_exist")
-    except UcsOperationError:
-        return (False, None)
-    mo_exists = mo.check_prop_match(**kwargs)
-    return (mo_exists, mo if mo_exists else None)
 
 
 def _local_lun_add(parent_mo, order, lun_name=None, type=None):
@@ -209,10 +209,9 @@ def _local_lun_add(parent_mo, order, lun_name=None, type=None):
                 "Both instance of Local Lun already added.")
         if mo[0].child[0].type == type:
             raise UcsOperationError(
-                "_local_lun_add",
-                "Instance of Local Lun of type '%s' already added at  order '%s'." %
-                (type,
-                 mo[0].order))
+        "_local_lun_add",
+        "Instance of Local Lun of type '%s' already added at  order '%s'." %
+        (type, mo[0].order))
 
         if not lun_name or not type:
             raise UcsOperationError(
@@ -236,8 +235,10 @@ def _local_lun_add(parent_mo, order, lun_name=None, type=None):
 
 
 def _local_jbod_add(parent_mo, order, slot_number):
-    from ucsmsdk.mometa.lsboot.LsbootLocalDiskImage import LsbootLocalDiskImage
-    from ucsmsdk.mometa.lsboot.LsbootLocalDiskImagePath import LsbootLocalDiskImagePath
+    from ucsmsdk.mometa.lsboot.LsbootLocalDiskImage import \
+        LsbootLocalDiskImage
+    from ucsmsdk.mometa.lsboot.LsbootLocalDiskImagePath import \
+        LsbootLocalDiskImagePath
 
     mo = [mo for mo in parent_mo.child
           if mo.get_class_id() == "LsbootLocalDiskImage"]
@@ -259,8 +260,10 @@ def _local_jbod_add(parent_mo, order, slot_number):
 
 
 def _local_embedded_disk_add(parent_mo, order, slot_number=None, type=None):
-    from ucsmsdk.mometa.lsboot.LsbootEmbeddedLocalDiskImage import LsbootEmbeddedLocalDiskImage
-    from ucsmsdk.mometa.lsboot.LsbootEmbeddedLocalDiskImagePath import LsbootEmbeddedLocalDiskImagePath
+    from ucsmsdk.mometa.lsboot.LsbootEmbeddedLocalDiskImage import \
+        LsbootEmbeddedLocalDiskImage
+    from ucsmsdk.mometa.lsboot.LsbootEmbeddedLocalDiskImagePath import \
+        LsbootEmbeddedLocalDiskImagePath
 
     mo = [mo for mo in parent_mo.child
           if mo.get_class_id() == "LsbootEmbeddedLocalDiskImage"]
@@ -534,18 +537,18 @@ def _iscsi_device_add(parent_mo, order, vnic_name):
 
 
 _local_devices = {
-    "local_disk": ["LsbootDefaultLocalImage", None],
-    "local_lun": ["LsbootLocalHddImage", _local_lun_add],
-    "local_jbod": ["LsbootLocalDiskImage", _local_jbod_add],
-    "sdcard": ["LsbootUsbFlashStorageImage", None],
-    "internal_usb": ["LsbootUsbInternalImage", None],
-    "external_usb": ["LsbootUsbExternalImage", None],
-    "embedded_lun": ["LsbootEmbeddedLocalLunImage", None],
-    "embedded_disk": ["LsbootEmbeddedLocalDiskImage", _local_embedded_disk_add],
+   "local_disk": ["LsbootDefaultLocalImage", None],
+   "local_lun": ["LsbootLocalHddImage", _local_lun_add],
+   "local_jbod": ["LsbootLocalDiskImage", _local_jbod_add],
+   "sdcard": ["LsbootUsbFlashStorageImage", None],
+   "internal_usb": ["LsbootUsbInternalImage", None],
+   "external_usb": ["LsbootUsbExternalImage", None],
+   "embedded_lun": ["LsbootEmbeddedLocalLunImage", None],
+   "embedded_disk": ["LsbootEmbeddedLocalDiskImage", _local_embedded_disk_add],
 }
 
 _local_device_invert = dict(
-    zip([value[0] for value in _local_devices.values()], _local_devices.keys()))
+zip([value[0] for value in _local_devices.values()], _local_devices.keys()))
 
 _vmedia_devices = {
     "cd_dvd": "read-only",
@@ -691,36 +694,15 @@ def _boot_policy_order_clear(handle, boot_policy):
         handle.remove_mo(mo)
 
     if boot_policy.reboot_on_update in ucsgenutils.AFFIRMATIVE_LIST:
-        boot_policy.reboot_on_update = False
+        boot_policy.reboot_on_update = "no"
         handle.set_mo(boot_policy)
         handle.commit()
-        boot_policy.reboot_on_update = True
+        boot_policy.reboot_on_update = "yes"
         handle.set_mo(boot_policy)
     handle.commit()
 
 
-def boot_policy_order_set(handle, boot_policy_dn, devices):
-    # check if devices is not empty
-    if not devices:
-        raise UcsOperationError("boot_policy_order_set", "No device present.")
-
-    boot_policy = handle.query_dn(boot_policy_dn)
-    if not boot_policy:
-        raise UcsOpeationError(
-            "boot_policy_order_set",
-            "BootPollicy '%s' does not exist." %
-            boot_policy_dn)
-
-    # Removes all the devices from the boot order
-    _boot_policy_order_clear(handle, boot_policy)
-
-    # Add devices and configure boot order
-    _device_add(handle, boot_policy, devices)
-    handle.set_mo(boot_policy)
-    handle.commit()
-
-
-def extract_device_from_bp_child(bp_child):
+def _extract_device_from_bp_child(bp_child):
     bp_devices = {}
 
     for ch_ in bp_child:
@@ -1005,8 +987,8 @@ def _compare_boot_policy(existing_boot_policy, expected_boot_policy):
         raise UcsOperationError("_compare_boot_policy",
                                 "Child count mismatch.")
 
-    existing_bp_devices = extract_device_from_bp_child(existing_bp_child)
-    expected_bp_devices = extract_device_from_bp_child(expected_bp_child)
+    existing_bp_devices = _extract_device_from_bp_child(existing_bp_child)
+    expected_bp_devices = _extract_device_from_bp_child(expected_bp_child)
 
     for device_name in existing_bp_devices:
         if device_name not in expected_bp_devices:
@@ -1051,7 +1033,231 @@ def _compare_boot_policy(existing_boot_policy, expected_boot_policy):
                            expected_bp_device)
 
 
-def boot_policy_order_exist(handle, boot_policy_dn, devices):
+def boot_policy_order_set(handle, boot_policy_dn, devices):
+    """
+    sets boot order for a given boot policy
+
+    Args:
+        handle (UcsHandle)
+        boot_policy_dn (string): boot policy dn
+        devices (list of dict):
+         [
+            {
+             "device_name": device_name,
+             "device_order" "1-16",
+             },
+            {
+             "device_name": device_name,
+             "device_order" "1-16",
+             "property_name": "property_value",
+            },
+            {
+             "device_name": device_name,
+             "device_order" "1-16",
+             "property_name": "property_value",
+             "property_name": "property_value",
+             "property_name": "property_value",
+            },
+         ]
+
+         device_name (string): device name
+          valid values are "local_lun",  "local_jbod",  "sdcard",
+           "internal_usb",  "external_usb",  "embedded_lun",
+           "embedded_disk",  "cd_dvd_local",  "cd_dvd_remote",
+           "floppy_local",  "floppy_remote",  "virtual_drive",
+           "cd_dvd_cimc",  "hdd_cimc",  "lan",  "san",  "iscsi"
+         device_order (string): boot order for a device, "0-16"
+
+         *note - mandatory keys are 'device_name' and 'device_order'
+                 other key depends on the device.
+
+    Returns:
+        None
+
+    Raises:
+        UcsOperationError: if LsbootPolicy is not present
+
+    Example:
+        devices = [
+                    {"device_name": "local_lun",
+                     "device_order": "1",
+                     "type": "primary",
+                     "lun_name": "primary"
+                    },
+                    {"device_name": "local_lun",
+                     "device_order": "1",
+                     "type": "secondary",
+                     "lun_name": "secondary"
+                    },
+                    {"device_name": "local_jbod",
+                     "device_order": "2",
+                     "slot_number": "1"
+                    },
+                    {"device_name": "sdcard",
+                     "device_order": "3",
+                    },
+                    {"device_name": "internal_usb",
+                     "device_order": "4",
+                    },
+                    {"device_name": "external_usb",
+                     "device_order": "5",
+                    },
+                    {"device_name": "embedded_lun",
+                     "device_order": "6",
+                    },
+                    {"device_name": "embedded_disk",
+                     "device_order": "7",
+                     "type": "primary",
+                     "slot_number": "1"
+                    },
+                    {"device_name": "embedded_disk",
+                     "device_order": "7",
+                     "type": "secondary",
+                     "slot_number": "1"
+                    },
+                    {"device_name": "cd_dvd_local",
+                     "device_order": "8",
+                    },
+                    {"device_name": "cd_dvd_remote",
+                     "device_order": "9",
+                    },
+                    {"device_name": "floppy_local",
+                     "device_order": "10",
+                    },
+                    {"device_name": "floppy_remote",
+                     "device_order": "11",
+                    },
+                    {"device_name": "virtual_drive",
+                     "device_order": "12",
+                    },
+                    {"device_name": "cd_dvd_cimc",
+                     "device_order": "13",
+                    },
+                    {"device_name": "hdd_cimc",
+                     "device_order": "14",
+                    },
+                    {"device_name": "lan",
+                     "device_order": "15",
+                     "vnic_name": "vnic_primary"
+                    },
+                    {"device_name": "lan",
+                     "device_order": "15",
+                     "vnic_name": "vnic_secondary"
+                    },
+                    {"device_name": "san",
+                     "device_order": "16",
+                     "vnic_name": "vnic_primary",
+                     "type": "primary",
+                     "target_type": "primary",
+                     "lun": "1",
+                     "wwn": "10:00:00:00:00:00:00:00"
+                    },
+                    {"device_name": "san",
+                     "device_order": "16",
+                     "vnic_name": "vnic_primary",
+                     "type": "primary",
+                     "target_type": "secondary",
+                     "lun": "1",
+                     "wwn": "10:00:00:00:00:00:00:00"
+                    },
+                    {"device_name": "san",
+                     "device_order": "16",
+                     "vnic_name": "vnic_secondary",
+                     "type": "secondary",
+                     "target_type": "primary",
+                     "lun": "1",
+                     "wwn": "10:00:00:00:00:00:00:00"
+                    },
+                    {"device_name": "san",
+                     "device_order": "16",
+                     "vnic_name": "vnic_secondary",
+                     "type": "secondary",
+                     "target_type": "secondary",
+                     "lun": "1",
+                     "wwn": "10:00:00:00:00:00:00:00"
+                    },
+                    # {"device_name": "iscsi",
+                    #  "device_order": "17",
+                    #  "vnic_name": "vnic_primary"
+                    # },
+                    # {"device_name": "iscsi",
+                    #  "device_order": "17",
+                    #  "vnic_name": "vnic_secondary"
+                    # },
+        ]
+
+        def test_boot_policy_order_set():
+            boot_policy_order_set(handle, boot_policy_dn, devices)
+
+    """
+    # check if devices is not empty
+    if not devices:
+        raise UcsOperationError("boot_policy_order_set", "No device present.")
+
+    boot_policy = handle.query_dn(boot_policy_dn)
+    if not boot_policy:
+        raise UcsOpeationError(
+            "boot_policy_order_set",
+            "BootPollicy '%s' does not exist." %
+            boot_policy_dn)
+
+    # Removes all the devices from the boot order
+    _boot_policy_order_clear(handle, boot_policy)
+
+    # Add devices and configure boot order
+    _device_add(handle, boot_policy, devices)
+    handle.set_mo(boot_policy)
+    handle.commit()
+
+
+def boot_policy_order_exists(handle, boot_policy_dn, devices, debug=False):
+    """
+    checks if a given boot order exists for a given boot policy
+
+    Args:
+        handle (UcsHandle)
+        boot_policy_dn (string): boot policy dn
+        devices (list of dict):
+         [
+            {
+             "device_name": device_name,
+             "device_order" "1-16",
+             },
+            {
+             "device_name": device_name,
+             "device_order" "1-16",
+             "property_name": "property_value",
+            },
+            {
+             "device_name": device_name,
+             "device_order" "1-16",
+             "property_name": "property_value",
+             "property_name": "property_value",
+             "property_name": "property_value",
+            },
+         ]
+
+         device_name (string): device name
+          valid values are "local_lun",  "local_jbod",  "sdcard",
+           "internal_usb",  "external_usb",  "embedded_lun",
+           "embedded_disk",  "cd_dvd_local",  "cd_dvd_remote",
+           "floppy_local",  "floppy_remote",  "virtual_drive",
+           "cd_dvd_cimc",  "hdd_cimc",  "lan",  "san",  "iscsi"
+         device_order (string): boot order for a device, "0-16"
+
+         *note - mandatory keys are 'device_name' and 'device_order'
+                 other key depends on the device.
+        debug (bool): True/False, if True, incase of error print stacktrace
+
+    Returns:
+        (True/False, LsbootPolicy MO/None)
+
+    Raises:
+        UcsOperationError:
+
+    Example:
+        boot_policy_order_exists(handle, boot_policy_dn, devices)
+    """
     # create the boot_policy_order_tree
     try:
         # check if devices is not empty
@@ -1080,12 +1286,14 @@ def boot_policy_order_exist(handle, boot_policy_dn, devices):
                                    need_response=True)
         existing_boot_policy = response.out_configs.child[0]
     except exception as err:
+        if debug:
+            import traceback
+            print str(traceback.print_exc())
         return False, None
 
     try:
         _compare_boot_policy(existing_boot_policy, expected_boot_policy)
     except Exception as err:
-        import traceback
-        return False, str(traceback.print_exc())
+        return False, None
 
-    return True, devices
+    return True, boot_policy
