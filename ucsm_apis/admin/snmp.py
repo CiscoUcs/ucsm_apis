@@ -169,7 +169,7 @@ def snmp_trap_add(handle, hostname, community, port="162", version="v2c",
         v3_privilege=v3_privilege)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -323,7 +323,7 @@ def snmp_user_add(handle, name, pwd, auth="md5", use_aes="no",
         descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 

@@ -115,7 +115,7 @@ def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
                          descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -273,7 +273,7 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
                           descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -299,7 +299,7 @@ def ldap_group_create(handle, name, descr=None, **kwargs):
 
     mo = AaaLdapGroup(parent_mo_or_dn=_ldap_dn, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -410,7 +410,7 @@ def ldap_group_role_add(handle, ldap_group_name, name, descr=None,
 
     mo = AaaUserRole(parent_mo_or_dn=ldap_group, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -536,7 +536,7 @@ def ldap_group_locale_add(handle, ldap_group_name, name, descr=None,
 
     mo = AaaUserLocale(parent_mo_or_dn=ldap_group, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -657,7 +657,7 @@ def ldap_provider_group_create(handle, name, descr=None, **kwargs):
                           descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -783,7 +783,7 @@ def ldap_provider_group_provider_add(handle, group_name, name,
                         descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 

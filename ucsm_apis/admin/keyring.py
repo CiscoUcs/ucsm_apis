@@ -344,7 +344,7 @@ def trusted_point_create(handle, name, policy_owner="local",
                cert_chain=cert_chain)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 

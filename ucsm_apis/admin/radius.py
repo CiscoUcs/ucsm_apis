@@ -62,7 +62,7 @@ def radius_provider_create(handle, name, order="lowest-available", key=None,
         descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -195,7 +195,7 @@ def radius_provider_group_create(handle, name, descr=None, **kwargs):
 
     mo = AaaProviderGroup(parent_mo_or_dn=_radius_dn, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -319,7 +319,7 @@ def radius_provider_group_add_provider(handle, group_name, name,
                         descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 

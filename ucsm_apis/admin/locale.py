@@ -48,7 +48,7 @@ def locale_create(handle, name, policy_owner="local", descr=None, **kwargs):
                    descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -189,7 +189,7 @@ def locale_org_assign(handle, locale_name, name, org_dn="org-root", descr=None,
 
     mo = AaaOrg(parent_mo_or_dn=locale, name=name, org_dn=org_dn, descr=descr)
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 

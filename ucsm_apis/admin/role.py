@@ -62,7 +62,7 @@ def role_create(handle, name, priv="read-only", policy_owner="local",
                  descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 

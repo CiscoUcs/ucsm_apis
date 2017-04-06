@@ -250,7 +250,7 @@ def call_home_profile_create(handle, name, format="xml", max_size="1000000",
                          descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -390,7 +390,7 @@ def call_home_profile_email_add(handle, profile_name, email, **kwargs):
                                     caller="call_home_profile_email_add")
     mo = CallhomeDest(parent_mo_or_dn=profile, email=email)
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -535,7 +535,7 @@ def call_home_policy_create(handle, cause, admin_state="enabled",
                         descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 

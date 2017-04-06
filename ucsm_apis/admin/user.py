@@ -85,7 +85,7 @@ def user_create(handle, name, pwd=None, clear_pwd_history="no",
                  )
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -232,7 +232,7 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
 
     mo = AaaUserRole(parent_mo_or_dn=user, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
@@ -371,7 +371,7 @@ def user_locale_add(handle, user_name, name, descr=None, **kwargs):
 
     mo = AaaUserLocale(parent_mo_or_dn=user, name=name, descr=descr)
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
