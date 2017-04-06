@@ -537,7 +537,10 @@ def password_strength_uncheck(handle):
         password_strength_uncheck(handle)
     """
     mo = handle.query_dn(_base_dn + "/pwd-profile")
-    mo.pwd_strength_check = "no"
+
+    args = {'pwd_strength_check': "no"}
+
+    mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
     return mo

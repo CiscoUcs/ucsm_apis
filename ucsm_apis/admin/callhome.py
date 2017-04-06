@@ -60,13 +60,15 @@ def call_home_enable(handle, alert_throttling_admin_state="on",
     if not mo:
         raise UcsOperationError("call_home_state_enable",
                                  "Call home not available.")
+    args = {'admin_state': "on",
+            'alert_throttling_admin_state': alert_throttling_admin_state
+            'name': name,
+            'descr': descr
+            }
 
-    mo.admin_state = "on"
-    mo.alert_throttling_admin_state = alert_throttling_admin_state
-    mo.name = name
-    mo.descr = descr
-
+    mo.set_prop_multiple(**args)
     mo.set_prop_multiple(**kwargs)
+
     handle.set_mo(mo)
     handle.commit()
     return mo
@@ -201,8 +203,9 @@ def call_home_disable(handle):
         raise UcsOperationError("call_home_disable",
                                  "Call home not available.")
 
-    mo.admin_state = "off"
+    args = {'admin_state': "off"}
 
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo
@@ -730,7 +733,9 @@ def call_home_system_inventory_send_now(handle):
         raise UcsOperationError("call_home_system_inventory_configure",
                         "Callhome system inventory '%s' does not exist." % dn)
 
-    mo.send_now = "yes"
+    args = {'send_now': "yes"}
+
+    mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
     return mo

@@ -87,7 +87,9 @@ def syslog_local_console_disable(handle):
         raise UcsOperationError("syslog_local_console_disable",
                                  "syslog console does not exist.")
 
-    mo.admin_state = CommSyslogConsoleConsts.ADMIN_STATE_DISABLED
+    args = {'admin_state': CommSyslogConsoleConsts.ADMIN_STATE_DISABLED}
+
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo
@@ -165,7 +167,9 @@ def syslog_local_monitor_disable(handle):
         raise UcsOperationError("syslog_local_monitor_disable",
                                  "syslog monitor does not exist.")
 
-    mo.admin_state = CommSyslogMonitorConsts.ADMIN_STATE_DISABLED
+    args = {'admin_state': CommSyslogMonitorConsts.ADMIN_STATE_DISABLED}
+
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo
@@ -245,7 +249,9 @@ def syslog_local_file_disable(handle):
         raise UcsOperationError("syslog_local_file_disable",
                                  "syslog file does not exist.")
 
-    mo.admin_state = CommSyslogFileConsts.ADMIN_STATE_DISABLED
+    args = {'admin_state': CommSyslogFileConsts.ADMIN_STATE_DISABLED}
+
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo
@@ -330,7 +336,9 @@ def syslog_remote_disable(handle, name):
         raise UcsOperationError("syslog_remote_disable",
                                  "Remote Destination '%s' does not exist" % dn)
 
-    mo.admin_state = CommSyslogClientConsts.ADMIN_STATE_DISABLED
+    args = {'admin_state': CommSyslogClientConsts.ADMIN_STATE_DISABLED}
+
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo

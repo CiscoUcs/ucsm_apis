@@ -116,7 +116,11 @@ def snmp_disable(handle):
     from ucsmsdk.mometa.comm.CommSnmp import CommSnmpConsts
 
     mo = snmp_config_get(handle, "snmp_disable")
-    mo.admin_state = CommSnmpConsts.ADMIN_STATE_DISABLED
+
+    args = {'admin_state': CommSnmpConsts.ADMIN_STATE_DISABLED}
+
+    mo.set_prop_multiple(**args)
+
     handle.set_mo(mo)
     handle.commit()
     return mo
