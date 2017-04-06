@@ -30,28 +30,28 @@ def teardown_module():
 
 # testcases
 # ---------
-def test_001_call_home_contact_update():
-    call_home_contact_update(handle)
+def test_001_callhome_contact_update():
+    callhome_contact_update(handle)
 
-def test_002_call_home_contact_update():
-    call_home_contact_update(handle, contact="ciscoucs")
+def test_002_callhome_contact_update():
+    callhome_contact_update(handle, contact="ciscoucs")
 
-def test_003_call_home_contact_update():
-    call_home_contact_update(handle,
+def test_003_callhome_contact_update():
+    callhome_contact_update(handle,
                      phone="+911234567890",
                      email="ciscoucs@cisco.com",
                      addr="cisco",
                      )
 
-def test_004_call_home_contact_update():
-    call_home_contact_update(handle,
+def test_004_callhome_contact_update():
+    callhome_contact_update(handle,
                              reply_to="ciscoucs@cisco.com")
 
-def test_005_call_home_smtp_update():
-    call_home_smtp_update(handle, host="1.1.1.1")
+def test_005_callhome_smtp_update():
+    callhome_smtp_update(handle, host="1.1.1.1")
 
-def test_call_home_enable():
-    call_home_enable(handle)
+def test_callhome_enable():
+    callhome_enable(handle)
 
-def test_call_home_disable():
-    call_home_disable(handle)
+def test_callhome_disable():
+    callhome_disable(handle)

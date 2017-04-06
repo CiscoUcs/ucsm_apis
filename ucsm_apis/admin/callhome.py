@@ -19,7 +19,7 @@ from ucsmsdk.ucsexception import UcsOperationError
 _base_dn = "call-home"
 
 
-def call_home_enable(handle, alert_throttling_admin_state="on",
+def callhome_enable(handle, alert_throttling_admin_state="on",
                      policy_owner="local",name=None, descr=None, **kwargs):
     """
     Enables call home alert.
@@ -27,16 +27,16 @@ def call_home_enable(handle, alert_throttling_admin_state="on",
     NOTE:
 	If enabling call home for the first time then first update contact and
 	smtp server.
-	- contact information using 'call_home_contact_update'
-		call_home_contact_update(handle,
+	- contact information using 'callhome_contact_update'
+		callhome_contact_update(handle,
 							     contact="ciscoucs",
                                  phone="+911234567890",
                                  email="ciscoucs@cisco.com",
                                  addr="cisco",
 							     reply_to="ciscoucs@cisco.com"
                                  )
-    - smtp server using 'call_home_smtp_update'.
-		call_home_smtp_update(handle, host="1.1.1.1")
+    - smtp server using 'callhome_smtp_update'.
+		callhome_smtp_update(handle, host="1.1.1.1")
 
 
     Args:
@@ -54,14 +54,14 @@ def call_home_enable(handle, alert_throttling_admin_state="on",
         UcsOperationError: If CallhomeEp is not present
 
     Example:
-        call_home_enable(handle, alert_throttling_admin_state="on")
+        callhome_enable(handle, alert_throttling_admin_state="on")
     """
     mo = handle.query_dn(_base_dn)
     if not mo:
-        raise UcsOperationError("call_home_state_enable",
+        raise UcsOperationError("callhome_state_enable",
                                  "Call home not available.")
     args = {'admin_state': "on",
-            'alert_throttling_admin_state': alert_throttling_admin_state
+            'alert_throttling_admin_state': alert_throttling_admin_state,
             'name': name,
             'descr': descr
             }
@@ -74,7 +74,7 @@ def call_home_enable(handle, alert_throttling_admin_state="on",
     return mo
 
 
-def call_home_contact_update(handle, contact=None, phone=None, email=None,
+def callhome_contact_update(handle, contact=None, phone=None, email=None,
                         addr=None, customer=None, contract=None, site=None,
                         r_from=None, reply_to=None, urgency=None, **kwargs):
     """
@@ -107,7 +107,7 @@ def call_home_contact_update(handle, contact=None, phone=None, email=None,
         from ucsmsdk.mometa.callhome.CallhomeSource import \
             CallhomeSourceConsts
 
-        call_home_contact_update(handle,
+        callhome_contact_update(handle,
                                  contact="user name",
                                  phone="+91-1234567890",
                                  email="user@cisco.com",
@@ -123,7 +123,7 @@ def call_home_contact_update(handle, contact=None, phone=None, email=None,
     dn = _base_dn + "/source"
     mo = handle.query_dn(dn)
     if not mo:
-        raise UcsOperationError("call_home_config",
+        raise UcsOperationError("callhome_config",
                                  "Call home source '%s' not available." % dn)
 
     args = {'contact': contact,
@@ -144,7 +144,7 @@ def call_home_contact_update(handle, contact=None, phone=None, email=None,
     handle.commit()
     return mo
 
-def call_home_smtp_update(handle, host=None, port="25", **kwargs):
+def callhome_smtp_update(handle, host=None, port="25", **kwargs):
     """
     Updates the SMTP server for callhome
 
@@ -162,14 +162,14 @@ def call_home_smtp_update(handle, host=None, port="25", **kwargs):
         UcsOperationError: If CallhomeSmtp is not present
 
     Example:
-        call_home_smtp_update(handle,
+        callhome_smtp_update(handle,
                               host="1.1.1.1",
                               port="25")
     """
     dn = _base_dn + "/smtp"
     mo = handle.query_dn(dn)
     if not mo:
-        raise UcsOperationError("call_home_smtp_update",
+        raise UcsOperationError("callhome_smtp_update",
                             "Call home smtp server '%s' not available." % dn)
 
     args = {'host': host, 'port': port}
@@ -182,7 +182,7 @@ def call_home_smtp_update(handle, host=None, port="25", **kwargs):
     return mo
 
 
-def call_home_disable(handle):
+def callhome_disable(handle):
     """
     Disables call home alert.
 
@@ -196,11 +196,11 @@ def call_home_disable(handle):
         UcsOperationError: If CallhomeEp is not present
 
     Example:
-        call_home_disable(handle)
+        callhome_disable(handle)
     """
     mo = handle.query_dn(_base_dn)
     if not mo:
-        raise UcsOperationError("call_home_disable",
+        raise UcsOperationError("callhome_disable",
                                  "Call home not available.")
 
     args = {'admin_state': "off"}
@@ -211,7 +211,7 @@ def call_home_disable(handle):
     return mo
 
 
-def call_home_profile_create(handle, name, format="xml", max_size="1000000",
+def callhome_profile_create(handle, name, format="xml", max_size="1000000",
                              level="debug", alert_groups=None,
                              descr=None, **kwargs):
     """
@@ -240,7 +240,7 @@ def call_home_profile_create(handle, name, format="xml", max_size="1000000",
         UcsOperationError: If CallhomeProfile is not present
 
     Example:
-        call_home_profile_create(handle, name="callhomeprofile")
+        callhome_profile_create(handle, name="callhomeprofile")
     """
     from ucsmsdk.mometa.callhome.CallhomeProfile import CallhomeProfile
 
@@ -258,7 +258,7 @@ def call_home_profile_create(handle, name, format="xml", max_size="1000000",
     return mo
 
 
-def call_home_profile_get(handle, name, caller="call_home_profile_get"):
+def callhome_profile_get(handle, name, caller="callhome_profile_get"):
     """
     Gets callhome profile.
 
@@ -274,7 +274,7 @@ def call_home_profile_get(handle, name, caller="call_home_profile_get"):
         UcsOperationError: If CallhomeProfile is not present
 
     Example:
-        call_home_profile_get(handle, name="callhomeprofile")
+        callhome_profile_get(handle, name="callhomeprofile")
     """
     dn = _base_dn + "/profile-" + name
     mo = handle.query_dn(dn)
@@ -284,7 +284,7 @@ def call_home_profile_get(handle, name, caller="call_home_profile_get"):
     return mo
 
 
-def call_home_profile_exists(handle, name, **kwargs):
+def callhome_profile_exists(handle, name, **kwargs):
     """
     Checks if the given callhome profile already exists with the same params
 
@@ -302,18 +302,18 @@ def call_home_profile_exists(handle, name, **kwargs):
         None
 
     Example:
-        call_home_profile_exists(handle, name="callhomeprofile", format="xml")
+        callhome_profile_exists(handle, name="callhomeprofile", format="xml")
     """
     try:
-        mo = call_home_profile_get(handle, name,
-                                   caller="call_home_profile_exist")
+        mo = callhome_profile_get(handle, name,
+                                   caller="callhome_profile_exist")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
 
-def call_home_profile_modify(handle, name, **kwargs):
+def callhome_profile_modify(handle, name, **kwargs):
     """
     Modifies callhome profile.
 
@@ -331,16 +331,16 @@ def call_home_profile_modify(handle, name, **kwargs):
         UcsOperationError: If CallhomeProfile is not present
 
     Example:
-        call_home_profile_modify(handle, name="callhomeprofile", format="xml")
+        callhome_profile_modify(handle, name="callhomeprofile", format="xml")
     """
-    mo = call_home_profile_get(handle, name, caller="call_home_profile_modify")
+    mo = callhome_profile_get(handle, name, caller="callhome_profile_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
     return mo
 
 
-def call_home_profile_delete(handle, name):
+def callhome_profile_delete(handle, name):
     """
     Deletes callhome profile.
 
@@ -358,14 +358,14 @@ def call_home_profile_delete(handle, name):
         UcsOperationError: If CallhomeProfile is not present
 
     Example:
-        call_home_profile_delete(handle, name="callhomeprofile")
+        callhome_profile_delete(handle, name="callhomeprofile")
     """
-    mo = call_home_profile_get(handle, name, caller="call_home_profile_delete")
+    mo = callhome_profile_get(handle, name, caller="callhome_profile_delete")
     handle.remove_mo(mo)
     handle.commit()
 
 
-def call_home_profile_email_add(handle, profile_name, email, **kwargs):
+def callhome_profile_email_add(handle, profile_name, email, **kwargs):
     """
     Adds email to callhome profile.
 
@@ -384,21 +384,21 @@ def call_home_profile_email_add(handle, profile_name, email, **kwargs):
         UcsOperationError: If CallhomeProfile is not present
 
     Example:
-        call_home_profile_email_add(handle, profile_name="callhomeprofile",
+        callhome_profile_email_add(handle, profile_name="callhomeprofile",
                                     email="ciscoucs@cisco.com")
     """
     from ucsmsdk.mometa.callhome.CallhomeDest import CallhomeDest
 
-    profile = call_home_profile_get(handle, profile_name,
-                                    caller="call_home_profile_email_add")
+    profile = callhome_profile_get(handle, profile_name,
+                                    caller="callhome_profile_email_add")
     mo = CallhomeDest(parent_mo_or_dn=profile, email=email)
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
-def call_home_profile_email_get(handle, profile_name, email,
-                                caller="call_home_profile_email_get"):
+def callhome_profile_email_get(handle, profile_name, email,
+                                caller="callhome_profile_email_get"):
     """
     Gets receipient email from callhome profile.
 
@@ -415,7 +415,7 @@ def call_home_profile_email_get(handle, profile_name, email,
         UcsOperationError: If CallhomeDest is not present
 
     Example:
-        call_home_profile_email_get(handle, profile_name="callhomeprofile",
+        callhome_profile_email_get(handle, profile_name="callhomeprofile",
                                     email="ciscoucs@cisco.com")
     """
     profile_dn = _base_dn + "/profile-" + profile_name
@@ -427,7 +427,7 @@ def call_home_profile_email_get(handle, profile_name, email,
     return mo
 
 
-def call_home_profile_email_exists(handle, profile_name, email, **kwargs):
+def callhome_profile_email_exists(handle, profile_name, email, **kwargs):
     """
     Checks if the given receipient email already exists with the same params
 
@@ -446,19 +446,19 @@ def call_home_profile_email_exists(handle, profile_name, email, **kwargs):
         None
 
     Example:
-        call_home_profile_email_exists(handle, profile_name="callhomeprofile",
+        callhome_profile_email_exists(handle, profile_name="callhomeprofile",
                                        email="ciscoucs@cisco.com")
     """
     try:
-        mo = call_home_profile_email_get(handle, profile_name, email,
-                                    caller="call_home_profile_email_exists")
+        mo = callhome_profile_email_get(handle, profile_name, email,
+                                    caller="callhome_profile_email_exists")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
 
-def call_home_profile_email_remove(handle, profile_name, email):
+def callhome_profile_email_remove(handle, profile_name, email):
     """
     Removes receipient email from callhome profile.
 
@@ -475,16 +475,16 @@ def call_home_profile_email_remove(handle, profile_name, email):
         UcsOperationError: If CallhomeDest is not present
 
     Example:
-        call_home_profile_email_remove(handle, profile_name="callhomeprofile",
+        callhome_profile_email_remove(handle, profile_name="callhomeprofile",
                                        email="ciscoucs@cisco.com")
     """
-    mo = call_home_profile_email_get(handle, profile_name, email,
-                                caller="call_home_profile_email_remove")
+    mo = callhome_profile_email_get(handle, profile_name, email,
+                                caller="callhome_profile_email_remove")
     handle.remove_mo(mo)
     handle.commit()
 
 
-def call_home_policy_create(handle, cause, admin_state="enabled",
+def callhome_policy_create(handle, cause, admin_state="enabled",
                             name=None, descr=None, **kwargs):
     """
     Creates callhome policy.
@@ -526,7 +526,7 @@ def call_home_policy_create(handle, cause, admin_state="enabled",
         None
 
     Example:
-        call_home_policy_create(handle, cause="equipment-removed",
+        callhome_policy_create(handle, cause="equipment-removed",
                                 "name="callhomepolicy")
     """
     from ucsmsdk.mometa.callhome.CallhomePolicy import CallhomePolicy
@@ -543,7 +543,7 @@ def call_home_policy_create(handle, cause, admin_state="enabled",
     return mo
 
 
-def call_home_policy_get(handle, cause, caller="call_home_policy_get"):
+def callhome_policy_get(handle, cause, caller="callhome_policy_get"):
     """
     Gets callhome policy.
 
@@ -559,7 +559,7 @@ def call_home_policy_get(handle, cause, caller="call_home_policy_get"):
         UcsOperationError: If CallhomePolicy is not present
 
     Example:
-        call_home_policy_get(handle, cause="equipment-removed")
+        callhome_policy_get(handle, cause="equipment-removed")
     """
     dn = _base_dn + "/policy-" + cause
     mo = handle.query_dn(dn)
@@ -569,7 +569,7 @@ def call_home_policy_get(handle, cause, caller="call_home_policy_get"):
     return mo
 
 
-def call_home_policy_exists(handle, cause, **kwargs):
+def callhome_policy_exists(handle, cause, **kwargs):
     """
     Checks if the given callhome policy already exists with the same params
 
@@ -587,18 +587,18 @@ def call_home_policy_exists(handle, cause, **kwargs):
         None
 
     Example:
-        call_home_policy_exists(handle, cause="equipment-removed")
+        callhome_policy_exists(handle, cause="equipment-removed")
     """
     try:
-        mo = call_home_policy_get(handle, cause,
-                                  caller="call_home_policy_exists")
+        mo = callhome_policy_get(handle, cause,
+                                  caller="callhome_policy_exists")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
 
-def call_home_policy_modify(handle, cause, **kwargs):
+def callhome_policy_modify(handle, cause, **kwargs):
     """
     Modifies the callhome policy
 
@@ -616,16 +616,16 @@ def call_home_policy_modify(handle, cause, **kwargs):
         UcsOperationError: If CallhomePolicy is not present
 
     Example:
-        call_home_policy_modify(handle, cause="equipment-removed")
+        callhome_policy_modify(handle, cause="equipment-removed")
     """
-    mo = call_home_policy_get(handle, cause, caller="call_home_policy_modify")
+    mo = callhome_policy_get(handle, cause, caller="callhome_policy_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
     return mo
 
 
-def call_home_policy_delete(handle, cause):
+def callhome_policy_delete(handle, cause):
     """
     Modifies the callhome policy
 
@@ -640,14 +640,14 @@ def call_home_policy_delete(handle, cause):
         UcsOperationError: If CallhomePolicy is not present
 
     Example:
-        call_home_policy_delete(handle, cause="equipment-removed")
+        callhome_policy_delete(handle, cause="equipment-removed")
     """
-    mo = call_home_policy_get(handle, cause, caller="call_home_policy_delete")
+    mo = callhome_policy_get(handle, cause, caller="callhome_policy_delete")
     handle.remove_mo(mo)
     handle.commit()
 
 
-def call_home_system_inventory_configure(handle,
+def callhome_system_inventory_configure(handle,
                                          admin_state="on",
                                          interval_days="30",
                                          time_of_day_hour="0",
@@ -683,12 +683,12 @@ def call_home_system_inventory_configure(handle,
         UcsOperationError: If CallhomePeriodicSystemInventory is not present
 
     Example:
-        call_home_system_inventory_configure(handle, admin_state="off")
+        callhome_system_inventory_configure(handle, admin_state="off")
     """
     dn = _base_dn + "periodicsysteminventory"
     mo = handle.query_dn(dn)
     if mo is None:
-        raise UcsOperationError("call_home_system_inventory_configure",
+        raise UcsOperationError("callhome_system_inventory_configure",
                         "Callhome system inventory '%s' does not exist." % dn)
 
     args = {
@@ -711,7 +711,7 @@ def call_home_system_inventory_configure(handle,
     return mo
 
 
-def call_home_system_inventory_send_now(handle):
+def callhome_system_inventory_send_now(handle):
     """
     Sends callhome system inventory now.
 
@@ -725,12 +725,12 @@ def call_home_system_inventory_send_now(handle):
         UcsOperationError: If CallhomePeriodicSystemInventory is not present
 
     Example:
-        call_home_system_inventory_send_now(handle)
+        callhome_system_inventory_send_now(handle)
     """
     dn = _base_dn + "periodicsysteminventory"
     mo = handle.query_dn(dn)
     if mo is None:
-        raise UcsOperationError("call_home_system_inventory_configure",
+        raise UcsOperationError("callhome_system_inventory_configure",
                         "Callhome system inventory '%s' does not exist." % dn)
 
     args = {'send_now': "yes"}
@@ -741,7 +741,7 @@ def call_home_system_inventory_send_now(handle):
     return mo
 
 
-def call_home_anonymous_reporting_on(handle, user_acknowledged="yes"):
+def callhome_anonymous_reporting_on(handle, user_acknowledged="yes"):
     """
     Sets anonymous reporting 'on'
 
@@ -756,12 +756,12 @@ def call_home_anonymous_reporting_on(handle, user_acknowledged="yes"):
         UcsOperationError: If CallhomeAnonymousReporting is not present
 
     Example:
-        call_home_anonymous_reporting_on(handle)
+        callhome_anonymous_reporting_on(handle)
     """
     dn = _base_dn + "anonymousreporting"
     mo = handle.query_dn(dn)
     if mo is None:
-        raise UcsOperationError("call_home_anonymous_reporting_on",
+        raise UcsOperationError("callhome_anonymous_reporting_on",
                     "Callhome Anonymous Reporting '%s' does not exist." % dn)
 
     args = {'admin_state': "on",
@@ -774,7 +774,7 @@ def call_home_anonymous_reporting_on(handle, user_acknowledged="yes"):
     return mo
 
 
-def call_home_anonymous_reporting_off(handle, user_acknowledged="yes"):
+def callhome_anonymous_reporting_off(handle, user_acknowledged="yes"):
     """
     Sets anonymous reporting 'off'
 
@@ -789,12 +789,12 @@ def call_home_anonymous_reporting_off(handle, user_acknowledged="yes"):
         UcsOperationError: If CallhomeAnonymousReporting is not present
 
     Example:
-        call_home_anonymous_reporting_off(handle)
+        callhome_anonymous_reporting_off(handle)
     """
     dn = _base_dn + "anonymousreporting"
     mo = handle.query_dn(dn)
     if mo is None:
-        raise UcsOperationError("call_home_anonymous_reporting_off",
+        raise UcsOperationError("callhome_anonymous_reporting_off",
                     "Callhome Anonymous Reporting '%s' does not exist." % dn)
 
     args = {'admin_state': "off",
