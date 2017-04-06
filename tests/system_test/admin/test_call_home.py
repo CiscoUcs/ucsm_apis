@@ -18,7 +18,6 @@ from ucsmsdk.ucshandle import UcsHandle
 from ucsm_apis.admin.callhome import *
 
 handle = None
-user_name =  "test" + datetime.date.today().strftime('%Y%b%d')
 
 def setup_module():
     global handle
