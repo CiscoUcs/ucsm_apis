@@ -67,7 +67,7 @@ def boot_policy_create(handle, name, org_dn="org-root",
                       descr=descr)
 
     mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, True)
+    handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
 
