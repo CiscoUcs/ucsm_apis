@@ -14,7 +14,7 @@ from ucsmsdk.ucsexception import UcsOperationError
 
 _base_dn = "sys/svc-ext"
 
-def time_zone_set(handle, timezone, policy_owner="local",
+def timezone_set(handle, timezone, policy_owner="local",
                   admin_state="enabled", port="0", descr=None, **kwargs):
     """
     sets the timezone of the UCSM
@@ -63,6 +63,33 @@ def time_zone_set(handle, timezone, policy_owner="local",
     handle.set_mo(mo)
     handle.commit()
     return mo
+
+
+def timezone_exists(handle, **kwargs):
+    """
+    checks if timezone exists.
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, CommDateTime MO/None)
+
+    Raises:
+        None
+
+    Example:
+        time_zone_exists(handle, timezone="Asia/Kolkata")
+    """
+    mo = handle.query_dn(_base_dn + "/datetime-svc")
+    if not mo:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
 
 
 def ntp_server_add(handle, name, descr=None, **kwargs):
