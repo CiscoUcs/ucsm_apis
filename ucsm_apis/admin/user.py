@@ -652,3 +652,31 @@ def password_profile_modify(handle,
     handle.set_mo(mo)
     handle.commit()
     return mo
+
+
+def password_profile_exists(handle, **kwargs):
+    """
+    checks if password profile exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, AaaPwdProfile MO/None)
+
+    Raises:
+        None
+
+    Example:
+        password_profile_exists(handle, change_count="2")
+    """
+    dn = _base_dn + "/pwd-profile"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
