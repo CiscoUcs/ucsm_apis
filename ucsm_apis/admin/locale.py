@@ -193,6 +193,37 @@ def locale_org_assign(handle, locale_name, name, org_dn="org-root", descr=None,
     handle.commit()
     return mo
 
+def locale_org_exists(handle, locale_name, name, **kwargs):
+    """
+    checks if org is already assigned to org
+
+    Args:
+        handle (UcsHandle)
+        locale_name(string): locale name
+        name (string): name of org assignment
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, AaaOrg MO/None)
+
+    Raises:
+        None
+
+    Example:
+        locale_org_exists(handle, locale_name="test_locale,
+                            name="org_name")
+    """
+    locale_dn = _base_dn + "/locale-" + locale_name
+    dn = locale_dn + "/org-" + name
+    mo = handle.query_dn(dn)
+    if not mo:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
 
 def locale_org_unassign(handle, locale_name, name):
     """
