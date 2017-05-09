@@ -33,7 +33,7 @@ def dns_server_get(handle, name, caller="dns_server_get"):
         bool_var = dns_server_get(handle, "10.10.10.10")
     """
 
-    dn = _dns_server_parent_dn  + "/dns-" + name
+    dn = _dns_svc_dn  + "/dns-" + name
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller, "Dns Server '%s' does not exist" % dn)
@@ -61,7 +61,7 @@ def dns_server_add(handle, name, descr=None, **kwargs):
     from ucsmsdk.mometa.comm.CommDnsProvider import CommDnsProvider
 
     mo = CommDnsProvider(
-        parent_mo_or_dn=_dns_server_parent_dn,
+        parent_mo_or_dn=_dns_svc_dn,
         name=name,
         descr=descr)
 
