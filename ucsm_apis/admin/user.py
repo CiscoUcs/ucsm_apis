@@ -482,7 +482,7 @@ def user_locale_remove(handle, user_name, name):
     handle.commit()
 
 
-def password_strength_check(handle, policy_owner = "local", descr=None,
+def password_strength_check(handle, policy_owner="local", descr=None,
                             **kwargs):
     """
     Check password strength for locally authenticated user
@@ -505,7 +505,7 @@ def password_strength_check(handle, policy_owner = "local", descr=None,
     Example:
         password_strength_check(handle)
     """
-    mo = handle.query_dn(_base_dn + "/pwd-profile")
+    mo = handle.query_dn(_base_dn)
 
     args = {'pwd_strength_check': "yes",
             'policy_owner': policy_owner,
@@ -518,6 +518,34 @@ def password_strength_check(handle, policy_owner = "local", descr=None,
     handle.set_mo(mo)
     handle.commit()
     return mo
+
+
+def password_strength_exists(handle, **kwargs):
+    """
+    checks if password strength is checked
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, AaaUserEp MO/None)
+
+    Raises:
+        None
+
+    Example:
+        password_strength_exists(handle)
+    """
+    mo = handle.query_dn(_base_dn)
+    if mo is None:
+        return False, None
+
+    kwargs['pwd_strength_check'] = 'yes'
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
 
 
 def password_strength_uncheck(handle):
@@ -536,11 +564,11 @@ def password_strength_uncheck(handle):
     Example:
         password_strength_uncheck(handle)
     """
-    mo = handle.query_dn(_base_dn + "/pwd-profile")
+    mo = handle.query_dn(_base_dn)
 
     args = {'pwd_strength_check': "no"}
 
-    mo.set_prop_multiple(**kwargs)
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo
