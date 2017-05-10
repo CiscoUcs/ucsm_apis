@@ -155,7 +155,7 @@ def auth_domain_delete(handle, name):
 
 
 def auth_domain_realm_configure(handle, domain_name, realm="local",
-                                use2_factor=False, provider_group=None,
+                                use2_factor="no", provider_group="",
                                 name=None, descr=None,
                                 **kwargs):
     """
@@ -166,7 +166,7 @@ def auth_domain_realm_configure(handle, domain_name, realm="local",
         domain_name (string): auth domain name
         realm (string): realm ["ldap", "local", "none", "radius", "tacacs"]
                         Use "none" to disable auth
-        use2_factor(bool): Two Factor Authentication (True/False)
+        use2_factor(bool): Two Factor Authentication ["yes", "no"]
         provider_group (string): provider group name
         name (string): name
         descr (string): description
@@ -184,13 +184,14 @@ def auth_domain_realm_configure(handle, domain_name, realm="local",
         auth_domain_realm_configure(handle, domain_name="ciscoucs",
                                     realm="ldap")
     """
-
     from ucsmsdk.mometa.aaa.AaaDomainAuth import AaaDomainAuth
 
     obj = auth_domain_get(handle, domain_name,
                           caller="auth_domain_realm_configure")
 
-    use2_factor = ("no", "yes") [use2_factor]
+    if realm == "local":
+        provider_group=""
+
     mo = AaaDomainAuth(parent_mo_or_dn=obj,
                        realm=realm,
                        use2_factor=use2_factor,
@@ -203,6 +204,36 @@ def auth_domain_realm_configure(handle, domain_name, realm="local",
     return mo
 
 
+def auth_domain_realm_exists(handle, domain_name, **kwargs):
+    """
+    checks if auth domain realm exists
+
+    Args:
+        handle (UcsHandle)
+        domain_name (string): name of auth domain
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, MO/None)
+
+    Example:
+        auth_domain_realm_exists(handle, domain_name="ciscoucs", realm="ldap")
+    """
+    domain_dn = _auth_realm_dn + "/domain-" + domain_name
+    dn = domain_dn + "/domain-auth"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
+
+    if 'realm' in kwargs and kwargs['realm'] == "local":
+        kwargs['provider_group'] = ""
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def native_auth_configure(handle, def_role_policy=None,
                           def_login=None, con_login=None,
                           descr=None, **kwargs):
@@ -212,8 +243,11 @@ def native_auth_configure(handle, def_role_policy=None,
     Args:
         handle (UcsHandle)
         def_role_policy (string): def_role_policy
+         valid values are "assign-default-role", "no-login"
         def_login (string): def_login
+         valid values are "ldap", "local", "none", "radius", "tacacs"
         con_login (string): con_login
+         valid values are "ldap", "local", "none", "radius", "tacacs"
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
@@ -229,8 +263,10 @@ def native_auth_configure(handle, def_role_policy=None,
         native_auth_configure(handle, def_role_policy="assign-default-role",
                               con_login="local")
     """
+    from ucsmsdk.mometa.aaa.AaaAuthRealm import AaaAuthRealm
 
     mo = AaaAuthRealm(parent_mo_or_dn="sys")
+
     args = {'def_role_policy': def_role_policy,
             'def_login': def_login,
             'con_login': con_login,
@@ -244,9 +280,37 @@ def native_auth_configure(handle, def_role_policy=None,
     return mo
 
 
-def native_auth_default(handle, realm=None, session_timeout=None,
-                        refresh_period=None, provider_group=None,
-                        name=None, descr=None, **kwargs):
+def native_auth_exists(handle, **kwargs):
+    """
+    checks if native auth exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, MO/None)
+
+    Example:
+        native_auth_exists(handle, def_role_policy="assign-default-role")
+    """
+    from ucsmsdk.mometa.aaa.AaaAuthRealm import AaaAuthRealm
+
+    mo = AaaAuthRealm(parent_mo_or_dn="sys")
+    mo = handle.query_dn(mo.dn)
+    if mo is None:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
+def native_auth_default_configure(handle, realm=None, session_timeout=None,
+                                  refresh_period=None, provider_group="",
+                                  use2_factor="no", name=None, descr=None,
+                                  **kwargs):
     """
     configure default native authentication.
 
@@ -257,6 +321,7 @@ def native_auth_default(handle, realm=None, session_timeout=None,
         session_timeout (string): session_timeout
         refresh_period (string): refresh_period
         provider_group (string): provider_group
+        use2_factor (str): two factor authentication ["yes", "no"]
         name (string): name
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -269,15 +334,20 @@ def native_auth_default(handle, realm=None, session_timeout=None,
         UcsOperationError: If AaaDefaultAuth is not present
 
     Example:
-        native_auth_default(handle, realm="radius")
+        native_auth_default_configure(handle, realm="radius")
     """
     from ucsmsdk.mometa.aaa.AaaDefaultAuth import AaaDefaultAuth
 
     mo = AaaDefaultAuth(parent_mo_or_dn=_auth_realm_dn)
+
+    if realm in ("local", "none"):
+        provider_group = ""
+
     args = {'realm': realm,
             'session_timeout': session_timeout,
             'refresh_period': refresh_period,
             'provider_group': provider_group,
+            'use2_factor': use2_factor,
             'name': name,
             'descr': descr
             }
@@ -289,8 +359,39 @@ def native_auth_default(handle, realm=None, session_timeout=None,
     return mo
 
 
-def native_auth_console(handle, realm=None, provider_group=None,
-                        name=None, descr=None, **kwargs):
+def native_auth_default_exists(handle, **kwargs):
+    """
+    checks if native auth console exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, MO/None)
+
+    Example:
+        native_auth_default_exists(handle, realm="radius")
+    """
+    from ucsmsdk.mometa.aaa.AaaDefaultAuth import AaaDefaultAuth
+
+    mo = AaaDefaultAuth(parent_mo_or_dn=_auth_realm_dn)
+    mo = handle.query_dn(mo.dn)
+    if mo is None:
+        return False, None
+
+    if 'realm' in kwargs and kwargs['realm'] in ("local", "none"):
+        kwargs['provider_group'] = ""
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
+def native_auth_console_configure(handle, realm=None, provider_group=None,
+                                  use2_factor="no", name=None, descr=None,
+                                  **kwargs):
     """
     configure console native authentication.
 
@@ -298,7 +399,8 @@ def native_auth_console(handle, realm=None, provider_group=None,
         handle (UcsHandle)
         realm (string): realm ["ldap", "local", "none", "radius", "tacacs"]
                         Use "none" to disable auth
-        provider_group (string): provider_group
+        provider_group (string): provider group name
+        use2_factor (str): two factor authentication ["yes", "no"]
         name (string): name
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -311,13 +413,18 @@ def native_auth_console(handle, realm=None, provider_group=None,
         UcsOperationError: If AaaConsoleAuth is not present
 
     Example:
-        native_auth_console(handle, realm="local")
+        native_auth_console_configure(handle, realm="local")
     """
-
     from ucsmsdk.mometa.aaa.AaaConsoleAuth import AaaConsoleAuth
+
     mo = AaaConsoleAuth(parent_mo_or_dn=_auth_realm_dn)
+
+    if realm in ("local", "none"):
+        provider_group = ""
+
     args = {'realm': realm,
             'provider_group': provider_group,
+            'use2_factor': use2_factor,
             'name': name,
             'descr': descr
             }
@@ -327,3 +434,34 @@ def native_auth_console(handle, realm=None, provider_group=None,
     handle.set_mo(mo)
     handle.commit()
     return mo
+
+
+def native_auth_console_exists(handle, **kwargs):
+    """
+    checks if native auth console exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, MO/None)
+
+    Example:
+        native_auth_console_exists(handle, realm="local")
+    """
+    from ucsmsdk.mometa.aaa.AaaConsoleAuth import AaaConsoleAuth
+
+    mo = AaaConsoleAuth(parent_mo_or_dn=_auth_realm_dn)
+    mo = handle.query_dn(mo.dn)
+    if mo is None:
+        return False, None
+
+    if 'realm' in kwargs and kwargs['realm'] in ("local", "none"):
+        kwargs['provider_group'] = ""
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
