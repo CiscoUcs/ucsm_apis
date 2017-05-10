@@ -60,6 +60,33 @@ def ldap_configure(handle, timeout="30", attribute="CiscoAvPair",
     return mo
 
 
+def ldap_exists(handle, **kwargs):
+    """
+    checks if ldap configuration exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, AaaLdapEp MO/None)
+
+    Raises:
+        None
+
+    Example:
+        ldap_exists(handle, timeout="40")
+    """
+    mo = handle.query_dn(dn=_ldap_dn)
+    if mo is None:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
                          basedn="", port="389", enable_ssl="no", filter=None,
                          attribute=None, key=None, timeout="30",
