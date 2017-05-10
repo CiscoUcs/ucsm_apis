@@ -60,6 +60,33 @@ def ldap_configure(handle, timeout="30", attribute="CiscoAvPair",
     return mo
 
 
+def ldap_exists(handle, **kwargs):
+    """
+    checks if ldap configuration exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, AaaLdapEp MO/None)
+
+    Raises:
+        None
+
+    Example:
+        ldap_exists(handle, timeout="40")
+    """
+    mo = handle.query_dn(dn=_ldap_dn)
+    if mo is None:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def ldap_provider_create(handle, name, order="lowest-available", rootdn=None,
                          basedn="", port="389", enable_ssl="no", filter=None,
                          attribute=None, key=None, timeout="30",
@@ -170,6 +197,10 @@ def ldap_provider_exists(handle, name, **kwargs):
         mo = ldap_provider_get(handle, name, caller="ldap_provider_exists")
     except UcsOperationError:
         return (False, None)
+
+    if 'order' in kwargs and kwargs['order'] == 'lowest-available':
+        kwargs.pop('order', None)
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
@@ -276,6 +307,38 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
     handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
+
+
+def ldap_provider_group_rules_exists(handle, ldap_provider_name, **kwargs):
+    """
+    checks if group rules for ldap provider exists
+
+    Args:
+        handle (UcsHandle)
+        ldap_provider_name (string): name of ldap provider
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, AaaLdapGroupRule MO/None)
+
+    Raises:
+        None
+
+    Example:
+        ldap_provider_group_rules_exists(handle,
+                                    ldap_provider_name="test_ldap_provider",
+                                    authorization="enable")
+    """
+    provider_dn = _ldap_dn + "/provider-" + ldap_provider_name
+    dn = provider_dn + "/ldapgroup-rule"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
 
 
 def ldap_group_create(handle, name, descr=None, **kwargs):
@@ -810,7 +873,7 @@ def ldap_provider_group_provider_get(handle, group_name, name,
                                          group_name="test_ldap_provider_group",
                                          name="test_provider")
     """
-    provider_group_dn = _ldap_dn+ "providergroup-" + group_name
+    provider_group_dn = _ldap_dn+ "/providergroup-" + group_name
     provider_ref_dn = provider_group_dn + "/provider-ref-" + name
     mo = handle.query_dn(provider_ref_dn)
     if mo is None:
@@ -846,6 +909,10 @@ def ldap_provider_group_provider_exists(handle, group_name, name, **kwargs):
                                 caller="ldap_provider_group_provider_exists")
     except UcsOperationError:
         return (False, None)
+
+    if 'order' in kwargs and kwargs['order'] == 'lowest-available':
+        kwargs.pop('order', None)
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
