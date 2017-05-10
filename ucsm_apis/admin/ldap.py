@@ -309,6 +309,38 @@ def ldap_provider_group_rules_configure(handle, ldap_provider_name,
     return mo
 
 
+def ldap_provider_group_rules_exists(handle, ldap_provider_name, **kwargs):
+    """
+    checks if group rules for ldap provider exists
+
+    Args:
+        handle (UcsHandle)
+        ldap_provider_name (string): name of ldap provider
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, AaaLdapGroupRule MO/None)
+
+    Raises:
+        None
+
+    Example:
+        ldap_provider_group_rules_exists(handle,
+                                    ldap_provider_name="test_ldap_provider",
+                                    authorization="enable")
+    """
+    provider_dn = _ldap_dn + "/provider-" + ldap_provider_name
+    dn = provider_dn + "/ldapgroup-rule"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def ldap_group_create(handle, name, descr=None, **kwargs):
     """
     creates ldap group map
