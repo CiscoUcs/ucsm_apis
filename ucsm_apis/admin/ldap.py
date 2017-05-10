@@ -170,6 +170,10 @@ def ldap_provider_exists(handle, name, **kwargs):
         mo = ldap_provider_get(handle, name, caller="ldap_provider_exists")
     except UcsOperationError:
         return (False, None)
+
+    if 'order' in kwargs and kwargs['order'] == 'lowest-available':
+        kwargs.pop('order', None)
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
