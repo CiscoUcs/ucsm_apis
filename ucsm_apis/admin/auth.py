@@ -189,8 +189,10 @@ def auth_domain_realm_configure(handle, domain_name, realm="local",
     obj = auth_domain_get(handle, domain_name,
                           caller="auth_domain_realm_configure")
 
-    if realm == "local":
-        provider_group=""
+    if realm in ("none", "local"):
+        provider_group = ""
+    if realm in ("none", "local", "ldap"):
+        use2_factor = "no"
 
     mo = AaaDomainAuth(parent_mo_or_dn=obj,
                        realm=realm,
@@ -227,8 +229,11 @@ def auth_domain_realm_exists(handle, domain_name, **kwargs):
     if mo is None:
         return False, None
 
-    if 'realm' in kwargs and kwargs['realm'] == "local":
+    realm = kwargs['realm']
+    if realm in ("none", "local"):
         kwargs['provider_group'] = ""
+    if realm in ("none", "local", "ldap"):
+        kwargs['use2_factor'] = "no"
 
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
@@ -307,8 +312,8 @@ def native_auth_exists(handle, **kwargs):
     return (mo_exists, mo if mo_exists else None)
 
 
-def native_auth_default_configure(handle, realm=None, session_timeout=None,
-                                  refresh_period=None, provider_group="",
+def native_auth_default_configure(handle, realm="local", refresh_period="600",
+                                  session_timeout="7200", provider_group="",
                                   use2_factor="no", name=None, descr=None,
                                   **kwargs):
     """
@@ -318,8 +323,8 @@ def native_auth_default_configure(handle, realm=None, session_timeout=None,
         handle (UcsHandle)
         realm (string): realm ["ldap", "local", "none", "radius", "tacacs"]
                         Use "none" to disable auth
-        session_timeout (string): session_timeout
         refresh_period (string): refresh_period
+        session_timeout (string): session_timeout
         provider_group (string): provider_group
         use2_factor (str): two factor authentication ["yes", "no"]
         name (string): name
@@ -340,12 +345,14 @@ def native_auth_default_configure(handle, realm=None, session_timeout=None,
 
     mo = AaaDefaultAuth(parent_mo_or_dn=_auth_realm_dn)
 
-    if realm in ("local", "none"):
+    if realm in ("none", "local"):
         provider_group = ""
+    if realm in ("none", "local", "ldap"):
+        use2_factor = "no"
 
     args = {'realm': realm,
-            'session_timeout': session_timeout,
             'refresh_period': refresh_period,
+            'session_timeout': session_timeout,
             'provider_group': provider_group,
             'use2_factor': use2_factor,
             'name': name,
@@ -382,14 +389,17 @@ def native_auth_default_exists(handle, **kwargs):
     if mo is None:
         return False, None
 
-    if 'realm' in kwargs and kwargs['realm'] in ("local", "none"):
+    realm = kwargs['realm']
+    if realm in ("none", "local"):
         kwargs['provider_group'] = ""
+    if realm in ("none", "local", "ldap"):
+        kwargs['use2_factor'] = "no"
 
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
 
-def native_auth_console_configure(handle, realm=None, provider_group=None,
+def native_auth_console_configure(handle, realm="local", provider_group="",
                                   use2_factor="no", name=None, descr=None,
                                   **kwargs):
     """
@@ -419,8 +429,10 @@ def native_auth_console_configure(handle, realm=None, provider_group=None,
 
     mo = AaaConsoleAuth(parent_mo_or_dn=_auth_realm_dn)
 
-    if realm in ("local", "none"):
+    if realm in ("none", "local"):
         provider_group = ""
+    if realm in ("none", "local", "ldap"):
+        use2_factor = "no"
 
     args = {'realm': realm,
             'provider_group': provider_group,
@@ -459,8 +471,11 @@ def native_auth_console_exists(handle, **kwargs):
     if mo is None:
         return False, None
 
-    if 'realm' in kwargs and kwargs['realm'] in ("local", "none"):
+    realm = kwargs['realm']
+    if realm in ("none", "local"):
         kwargs['provider_group'] = ""
+    if realm in ("none", "local", "ldap"):
+        kwargs['use2_factor'] = "no"
 
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
