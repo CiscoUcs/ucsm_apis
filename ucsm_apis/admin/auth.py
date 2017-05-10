@@ -166,7 +166,7 @@ def auth_domain_realm_configure(handle, domain_name, realm="local",
         domain_name (string): auth domain name
         realm (string): realm ["ldap", "local", "none", "radius", "tacacs"]
                         Use "none" to disable auth
-        use2_factor(bool): Two Factor Authentication ["yes", "no"]
+        use2_factor(string): Two Factor Authentication ["yes", "no"]
         provider_group (string): provider group name
         name (string): name
         descr (string): description
