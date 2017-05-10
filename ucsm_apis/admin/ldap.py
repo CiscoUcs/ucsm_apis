@@ -814,7 +814,7 @@ def ldap_provider_group_provider_get(handle, group_name, name,
                                          group_name="test_ldap_provider_group",
                                          name="test_provider")
     """
-    provider_group_dn = _ldap_dn+ "providergroup-" + group_name
+    provider_group_dn = _ldap_dn+ "/providergroup-" + group_name
     provider_ref_dn = provider_group_dn + "/provider-ref-" + name
     mo = handle.query_dn(provider_ref_dn)
     if mo is None:
@@ -850,6 +850,10 @@ def ldap_provider_group_provider_exists(handle, group_name, name, **kwargs):
                                 caller="ldap_provider_group_provider_exists")
     except UcsOperationError:
         return (False, None)
+
+    if 'order' in kwargs and kwargs['order'] == 'lowest-available':
+        kwargs.pop('order', None)
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
