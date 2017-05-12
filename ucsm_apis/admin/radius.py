@@ -117,6 +117,10 @@ def radius_provider_exists(handle, name, **kwargs):
         mo = radius_provider_get(handle, name, "radius_provider_exists")
     except UcsOperationError:
         return (False, None)
+
+    if 'order' in kwargs and kwargs['order'] == 'lowest-available':
+        kwargs.pop('order', None)
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
@@ -278,7 +282,7 @@ def radius_provider_group_delete(handle, name):
     handle.commit()
 
 
-def radius_provider_group_add_provider(handle, group_name, name,
+def radius_provider_group_provider_add(handle, group_name, name,
                                        order="lowest-available", descr=None,
                                        **kwargs):
     """
@@ -302,16 +306,16 @@ def radius_provider_group_add_provider(handle, group_name, name,
         UcsOperationError: if AaaProviderGroup  or AaaProvider is not present
 
     Example:
-        radius_provider_group_add_provider(
+        radius_provider_group_provider_add(
           handle, group_name="test_prov_grp", name="test_radius_prov")
     """
     from ucsmsdk.mometa.aaa.AaaProviderRef import AaaProviderRef
 
     radius_provider = radius_provider_get(handle, name,
-                                caller="radius_provider_group_add_provider")
+                                caller="radius_provider_group_provider_add")
 
     radius_provider_group = radius_provider_group_get(handle, group_name,
-                                caller="radius_provider_group_add_provider")
+                                caller="radius_provider_group_provider_add")
 
     mo = AaaProviderRef(parent_mo_or_dn=radius_provider_group,
                         name=name,
@@ -324,7 +328,8 @@ def radius_provider_group_add_provider(handle, group_name, name,
     return mo
 
 
-def radius_provider_group_provider_get(handle, group_name, name):
+def radius_provider_group_provider_get(handle, group_name, name,
+                                caller="radius_provider_group_provider_get"):
     """
     gets provider  under a radius provider group
 
@@ -381,11 +386,15 @@ def radius_provider_group_provider_exists(handle, group_name, name, **kwargs):
                             caller="radius_provider_group_provider_exists")
     except UcsOperationError:
         return (False, None)
+
+    if 'order' in kwargs and kwargs['order'] == 'lowest-available':
+        kwargs.pop('order', None)
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
 
-def radius_provider_group_modify_provider(handle, group_name, name, **kwargs):
+def radius_provider_group_provider_modify(handle, group_name, name, **kwargs):
     """
     modifies a provider to a radius provider group
 
@@ -404,19 +413,19 @@ def radius_provider_group_modify_provider(handle, group_name, name, **kwargs):
         UcsOperationError: if AaaProviderRef is not present
 
     Example:
-        radius_provider_group_modify_provider(
+        radius_provider_group_provider_modify(
           handle, group_name="test_prov_grp", name="test_radius_prov",
           order="2")
     """
     mo = radius_provider_group_provider_get(handle, group_name, name,
-                            caller="radius_provider_group_modify_provider")
+                            caller="radius_provider_group_provider_modify")
     mo.set_prop_multiple(**kwargs)
     handle.set_mo(mo)
     handle.commit()
     return mo
 
 
-def radius_provider_group_remove_provider(handle, group_name, name):
+def radius_provider_group_provider_remove(handle, group_name, name):
     """
     removes a provider from a radius provider group
 
@@ -432,11 +441,11 @@ def radius_provider_group_remove_provider(handle, group_name, name):
         UcsOperationError: if AaaProviderRef is not present
 
     Example:
-        radius_provider_group_remove_provider(handle,
+        radius_provider_group_provider_remove(handle,
                                     group_name="test_radius_provider_group",
                                     name="test_radius_provider")
     """
     mo = radius_provider_group_provider_get(handle, group_name, name,
-                                caller="radius_provider_group_remove_provider")
+                                caller="radius_provider_group_provider_remove")
     handle.remove_mo(mo)
     handle.commit()
