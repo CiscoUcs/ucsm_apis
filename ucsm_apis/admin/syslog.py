@@ -95,6 +95,36 @@ def syslog_local_console_disable(handle):
     return mo
 
 
+def syslog_local_console_exists(handle, **kwargs):
+    """
+    Checks if the syslog local console already exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, MO/None)
+
+    Example:
+        syslog_local_console_exists(handle, severity="alerts")
+    """
+    from ucsmsdk.mometa.comm.CommSyslogConsole import \
+        CommSyslogConsoleConsts
+
+    dn = _syslog_dn + "/console"
+    mo = handle.query_dn(dn)
+    if not mo:
+        return False, None
+
+    kwargs['admin_state'] = CommSyslogConsoleConsts.ADMIN_STATE_ENABLED
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def syslog_local_monitor_enable(handle, severity="emergencies",
                                 name=None, descr=None, **kwargs):
     """
@@ -175,6 +205,36 @@ def syslog_local_monitor_disable(handle):
     return mo
 
 
+def syslog_local_monitor_exists(handle, **kwargs):
+    """
+    Checks if the syslog local monitor already exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, MO/None)
+
+    Example:
+        syslog_local_monitor_exists(handle, severity="alerts")
+    """
+    from ucsmsdk.mometa.comm.CommSyslogMonitor import \
+        CommSyslogMonitorConsts
+
+    dn = _syslog_dn + "/monitor"
+    mo = handle.query_dn(dn)
+    if not mo:
+        return False, None
+
+    kwargs['admin_state'] = CommSyslogMonitorConsts.ADMIN_STATE_ENABLED
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def syslog_local_file_enable(handle, severity="emergencies", size=None,
                              name=None, descr=None, **kwargs):
     """
@@ -185,7 +245,7 @@ def syslog_local_file_enable(handle, severity="emergencies", size=None,
         severity (string): level of logging
          valid values are "alerts", "critical", "debugging", "emergencies",
           "errors", "information", "notifications", "warnings"
-        size (string): size of log file, (in bytes)
+        size (string): size of log file, (in bytes, between 4096-4194304)
         name (string): name of log file
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -255,6 +315,35 @@ def syslog_local_file_disable(handle):
     handle.set_mo(mo)
     handle.commit()
     return mo
+
+
+def syslog_local_file_exists(handle, **kwargs):
+    """
+    Checks if the syslog local file already exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, MO/None)
+
+    Example:
+        syslog_local_file_exists(handle, severity="alerts")
+    """
+    from ucsmsdk.mometa.comm.CommSyslogFile import CommSyslogFileConsts
+
+    dn = _syslog_dn + "/file"
+    mo = handle.query_dn(dn)
+    if not mo:
+        return False, None
+
+    kwargs['admin_state'] = CommSyslogFileConsts.ADMIN_STATE_ENABLED
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
 
 
 def syslog_remote_enable(handle, name, hostname, severity="emergencies",
@@ -344,6 +433,39 @@ def syslog_remote_disable(handle, name):
     return mo
 
 
+def syslog_remote_exists(handle, name, **kwargs):
+    """
+    Checks if the syslog remote already exists
+
+    Args:
+        handle (UcsHandle)
+        name (string): remote server type
+         valid values are "primary", "secondary", "tertiary"
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, MO/None)
+
+    Example:
+        syslog_remote_exists(handle, name="primary", hostname="192.168.1.2",
+                             severity="alert")
+    """
+    from ucsmsdk.mometa.comm.CommSyslogClient import \
+        CommSyslogClientConsts
+
+    dn = _syslog_dn + "/client-" + name
+    mo = handle.query_dn(dn)
+    if not mo:
+        return False, None
+
+    kwargs['admin_state'] = CommSyslogClientConsts.ADMIN_STATE_ENABLED
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def syslog_source_configure(handle, faults=None, audits=None, events=None,
                             name=None, descr=None, **kwargs):
     """
@@ -391,3 +513,30 @@ def syslog_source_configure(handle, faults=None, audits=None, events=None,
     handle.set_mo(mo)
     handle.commit()
     return mo
+
+
+def syslog_source_exists(handle, **kwargs):
+    """
+    Checks if the syslog source already exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, MO/None)
+
+    Example:
+        syslog_source_exists(handle, faults="enabled", audits="disabled",
+                                events="disabled")
+    """
+    dn = _syslog_dn + "/source"
+    mo = handle.query_dn(dn)
+    if not mo:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
