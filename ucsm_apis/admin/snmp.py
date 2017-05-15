@@ -126,6 +126,43 @@ def snmp_disable(handle):
     return mo
 
 
+def snmp_exists(handle, **kwargs):
+    """
+    checks if snmp  exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, CommSnmp MO/None)
+
+    Raises:
+        None
+
+    Example:
+        mo = snmp_exists(handle,
+                         community="username",
+                         sys_contact="user contact",
+                         sys_location="user location",
+                         descr="SNMP Service")
+
+    """
+    from ucsmsdk.mometa.comm.CommSnmp import CommSnmpConsts
+
+    try:
+        mo = snmp_config_get(handle, caller="snmp_exists")
+    except UcsOperationError:
+        return (False, None)
+
+    kwargs['admin_state'] = CommSnmpConsts.ADMIN_STATE_ENABLED
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def snmp_trap_add(handle, hostname, community, port="162", version="v2c",
                   notification_type="traps", v3_privilege="noauth", **kwargs):
     """
@@ -162,6 +199,9 @@ def snmp_trap_add(handle, hostname, community, port="162", version="v2c",
                       notification_type="informs")
     """
     from ucsmsdk.mometa.comm.CommSnmpTrap import CommSnmpTrap
+
+    if version == 'v1':
+        notification_type = 'traps'
 
     mo = CommSnmpTrap(
         parent_mo_or_dn=_base_dn + "/snmp-svc",
@@ -230,6 +270,11 @@ def snmp_trap_exists(handle, hostname, **kwargs):
         mo = snmp_trap_get(handle, hostname, caller="snmp_trap_exists")
     except UcsOperationError:
         return (False, None)
+
+
+    if 'version' in kwargs and kwargs['version'] == 'v1':
+        kwargs['notification_type'] = 'traps'
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
@@ -382,6 +427,12 @@ def snmp_user_exists(handle, name, **kwargs):
         mo = snmp_user_get(handle, name, caller="snmp_user_exists")
     except UcsOperationError:
         return (False, None)
+
+    if 'pwd' in kwargs:
+        kwargs.pop('pwd', None)
+    if 'privpwd' in kwargs:
+        kwargs.pop('privpwd', None)
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
