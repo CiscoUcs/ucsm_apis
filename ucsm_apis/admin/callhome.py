@@ -42,6 +42,8 @@ def callhome_enable(handle, alert_throttling_admin_state="on",
     Args:
         handle (UcsHandle)
         alert_throttling_admin_state (string): "on" or "off"
+        policy_owner (string): policy owner
+         valid values are "local", "pending-policy", "policy"
         name (string): name
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -61,6 +63,7 @@ def callhome_enable(handle, alert_throttling_admin_state="on",
         raise UcsOperationError("callhome_state_enable",
                                  "Call home not available.")
     args = {'admin_state': "on",
+            'policy_owner': policy_owner,
             'alert_throttling_admin_state': alert_throttling_admin_state,
             'name': name,
             'descr': descr
@@ -74,15 +77,73 @@ def callhome_enable(handle, alert_throttling_admin_state="on",
     return mo
 
 
-def callhome_contact_update(handle, contact=None, phone=None, email=None,
-                        addr=None, customer=None, contract=None, site=None,
-                        r_from=None, reply_to=None, urgency=None, **kwargs):
+def callhome_exists(handle, **kwargs):
+    """
+    Checks if the callhome already exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, CallhomeEp MO/None)
+
+    Raises:
+        None
+
+    Example:
+        callhome_exists(handle, alert_throttling_admin_state="on")
+    """
+    mo = handle.query_dn(_base_dn)
+    if mo is None:
+        return False, None
+
+    kwargs['admin_state'] = 'on'
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
+def callhome_disable(handle):
+    """
+    Disables call home alert.
+
+    Args:
+        handle (UcsHandle)
+
+    Returns:
+        CallhomeEp : ManagedObject
+
+    Raises:
+        UcsOperationError: If CallhomeEp is not present
+
+    Example:
+        callhome_disable(handle)
+    """
+    mo = handle.query_dn(_base_dn)
+    if not mo:
+        raise UcsOperationError("callhome_disable",
+                                 "Call home not available.")
+
+    args = {'admin_state': "off"}
+
+    mo.set_prop_multiple(**args)
+    handle.set_mo(mo)
+    handle.commit()
+    return mo
+
+
+def callhome_contact_update(handle, contact, phone, email, addr, customer,
+                            contract, site, r_from, reply_to, urgency=None,
+                            **kwargs):
     """
     Updates the contact detail for callhome
 
     Args:
         handle (UcsHandle)
-        contact (string): Contact Name
+        contact (string): contact Name
         phone (string): phone number e.g. +91-1234567890
         email (string): contact email address
         addr (string): contact address
@@ -144,7 +205,47 @@ def callhome_contact_update(handle, contact=None, phone=None, email=None,
     handle.commit()
     return mo
 
-def callhome_smtp_update(handle, host=None, port="25", **kwargs):
+
+def callhome_contact_exists(handle, **kwargs):
+    """
+    Checks if the callhome contact already exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, CallhomeSource MO/None)
+
+    Raises:
+        None
+
+    Example:
+        callhome_contact_exists(handle,
+                                contact="user name",
+                                phone="+91-1234567890",
+                                email="user@cisco.com",
+                                addr="user address",
+                                customer="1111",
+                                contract="2222",
+                                site="3333",
+                                r_from="from@cisco.com",
+                                reply_to="to@cisco.com",
+                                urgency=CallhomeSourceConsts.URGENCY_ALERT,
+                                )
+    """
+    dn = _base_dn + "/source"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
+def callhome_smtp_update(handle, host, port="25", **kwargs):
     """
     Updates the SMTP server for callhome
 
@@ -182,33 +283,34 @@ def callhome_smtp_update(handle, host=None, port="25", **kwargs):
     return mo
 
 
-def callhome_disable(handle):
+def callhome_smtp_exists(handle, **kwargs):
     """
-    Disables call home alert.
+    Checks if the callhome smtp server already exists
 
     Args:
         handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
 
     Returns:
-        CallhomeEp : ManagedObject
+        (True/False, CallhomeSmtp MO/None)
 
     Raises:
-        UcsOperationError: If CallhomeEp is not present
+        None
 
     Example:
-        callhome_disable(handle)
+        callhome_smtp_exists(handle,
+                             host="1.1.1.1",
+                             port="25")
     """
-    mo = handle.query_dn(_base_dn)
-    if not mo:
-        raise UcsOperationError("callhome_disable",
-                                 "Call home not available.")
+    dn = _base_dn + "/smtp"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
 
-    args = {'admin_state': "off"}
-
-    mo.set_prop_multiple(**args)
-    handle.set_mo(mo)
-    handle.commit()
-    return mo
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
 
 
 def callhome_profile_create(handle, name, format="xml", max_size="1000000",
@@ -309,6 +411,16 @@ def callhome_profile_exists(handle, name, **kwargs):
                                    caller="callhome_profile_exist")
     except UcsOperationError:
         return (False, None)
+
+    if 'alert_groups' in kwargs:
+        alert_groups = kwargs['alert_groups']
+        alert_groups = [i.strip() for i in alert_groups.split(',')]
+        if len(alert_groups) == 3:
+            alert_groups.append('all')
+        alert_groups = sorted(alert_groups)
+        alert_groups = ",".join(alert_groups)
+        kwargs['alert_groups'] = alert_groups
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
@@ -396,6 +508,7 @@ def callhome_profile_email_add(handle, profile_name, email, **kwargs):
     handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
+
 
 def callhome_profile_email_get(handle, profile_name, email,
                                 caller="callhome_profile_email_get"):
@@ -668,6 +781,7 @@ def callhome_system_inventory_configure(handle,
         interval_days (string): send interval(days)
         time_of_day_hour (string): Hours of day to send
         time_of_day_minute (string): Minute of hour
+        maximum_retry_count (string): maximum retry count
         poll_interval_seconds (string): poll interval in seconds
         retry_delay_minutes (string): retry after 'n' minutes
         minimum_send_now_interval_seconds (string): minimum send interval
@@ -685,7 +799,7 @@ def callhome_system_inventory_configure(handle,
     Example:
         callhome_system_inventory_configure(handle, admin_state="off")
     """
-    dn = _base_dn + "periodicsysteminventory"
+    dn = _base_dn + "/periodicsysteminventory"
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError("callhome_system_inventory_configure",
@@ -711,6 +825,34 @@ def callhome_system_inventory_configure(handle,
     return mo
 
 
+def callhome_system_inventory_exists(handle, **kwargs):
+    """
+    Checks if the callhome system inventory already exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, CallhomePeriodicSystemInventory MO/None)
+
+    Raises:
+        None
+
+    Example:
+        callhome_system_inventory_exists(handle, admin_state="off")
+    """
+    dn = _base_dn + "/periodicsysteminventory"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def callhome_system_inventory_send_now(handle):
     """
     Sends callhome system inventory now.
@@ -727,7 +869,7 @@ def callhome_system_inventory_send_now(handle):
     Example:
         callhome_system_inventory_send_now(handle)
     """
-    dn = _base_dn + "periodicsysteminventory"
+    dn = _base_dn + "/periodicsysteminventory"
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError("callhome_system_inventory_configure",
@@ -735,13 +877,13 @@ def callhome_system_inventory_send_now(handle):
 
     args = {'send_now': "yes"}
 
-    mo.set_prop_multiple(**kwargs)
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo
 
 
-def callhome_anonymous_reporting_on(handle, user_acknowledged="yes"):
+def callhome_anonymous_reporting_on(handle, user_acknowledged="yes", **kwargs):
     """
     Sets anonymous reporting 'on'
 
@@ -758,7 +900,7 @@ def callhome_anonymous_reporting_on(handle, user_acknowledged="yes"):
     Example:
         callhome_anonymous_reporting_on(handle)
     """
-    dn = _base_dn + "anonymousreporting"
+    dn = _base_dn + "/anonymousreporting"
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError("callhome_anonymous_reporting_on",
@@ -769,18 +911,18 @@ def callhome_anonymous_reporting_on(handle, user_acknowledged="yes"):
             }
 
     mo.set_prop_multiple(**kwargs)
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo
 
 
-def callhome_anonymous_reporting_off(handle, user_acknowledged="yes"):
+def callhome_anonymous_reporting_off(handle):
     """
     Sets anonymous reporting 'off'
 
     Args:
         handle (UcsHandle)
-        user_acknowledged (string): valid values are "yes", "no"
 
     Returns:
         CallhomeAnonymousReporting : ManagedObject
@@ -791,18 +933,47 @@ def callhome_anonymous_reporting_off(handle, user_acknowledged="yes"):
     Example:
         callhome_anonymous_reporting_off(handle)
     """
-    dn = _base_dn + "anonymousreporting"
+    dn = _base_dn + "/anonymousreporting"
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError("callhome_anonymous_reporting_off",
                     "Callhome Anonymous Reporting '%s' does not exist." % dn)
 
     args = {'admin_state': "off",
-            'user_acknowledged': user_acknowledged
             }
 
-    mo.set_prop_multiple(**kwargs)
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo
+
+
+def callhome_anonymous_reporting_exists(handle, **kwargs):
+    """
+    Checks if the callhome anonymoue reporting already exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucsccoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, CallhomeAnonymousReporting MO/None)
+
+    Raises:
+        None
+
+    Example:
+        callhome_anonymous_reporting_exists(handle)
+    """
+    dn = _base_dn + "/anonymousreporting"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
+
+    kwargs['admin_state'] = "on"
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
 
