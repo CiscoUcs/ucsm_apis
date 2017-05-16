@@ -520,7 +520,7 @@ def password_strength_check(handle, policy_owner="local", descr=None,
     return mo
 
 
-def password_strength_exists(handle, **kwargs):
+def password_strength_check_exists(handle, **kwargs):
     """
     checks if password strength is checked
 
@@ -537,7 +537,7 @@ def password_strength_exists(handle, **kwargs):
         None
 
     Example:
-        password_strength_exists(handle)
+        password_strength_check_exists(handle)
     """
     mo = handle.query_dn(_base_dn)
     if mo is None:
