@@ -203,6 +203,16 @@ def user_delete(handle, name):
     handle.remove_mo(mo)
     handle.commit()
 
+def _user_role_add(handle, user_mo, name, descr=None, **kwargs):
+    """
+    adds single role to an user
+    """
+    from ucsmsdk.mometa.aaa.AaaUserRole import AaaUserRole
+
+    mo = AaaUserRole(parent_mo_or_dn=user_mo, name=name, descr=descr)
+    mo.set_prop_multiple(**kwargs)
+    handle.add_mo(mo, modify_present=True)
+    return mo
 
 def user_role_add(handle, user_name, name, descr=None, **kwargs):
     """
@@ -211,7 +221,7 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): rolename
+        name (string): rolename, also allowed comma separated roles
         descr (string): descr
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
@@ -230,11 +240,15 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
 
     user = user_get(handle, user_name, "user_role_add")
 
-    mo = AaaUserRole(parent_mo_or_dn=user, name=name, descr=descr)
-    mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, modify_present=True)
+    roles = [role.strip() for role in name.split(',')]
+    roles_mo = []
+    for role in roles:
+        role_mo = _user_role_add(handle, user_mo=user, name=role,
+                                 descr=descr, **kwargs)
+        roles_mo.append(role_mo)
+
     handle.commit()
-    return mo
+    return roles_mo
 
 
 def user_role_get(handle, user_name, name, caller="user_role_get"):
@@ -263,6 +277,15 @@ def user_role_get(handle, user_name, name, caller="user_role_get"):
     return mo
 
 
+def _user_role_exists(handle, user_name, name, **kwargs):
+    try:
+        mo = user_role_get(handle, user_name, name, "user_role_exists")
+    except UcsOperationError:
+        return (False, None)
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def user_role_exists(handle, user_name, name, **kwargs):
     """
     check if role is already added to user
@@ -270,7 +293,7 @@ def user_role_exists(handle, user_name, name, **kwargs):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): rolename
+        name (string): rolename, also allowed comma separated roles
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
@@ -284,12 +307,15 @@ def user_role_exists(handle, user_name, name, **kwargs):
     Example:
         user_role_exists(handle, user_name="test", name="admin")
     """
-    try:
-        mo = user_role_get(handle, user_name, name, "user_role_exists")
-    except UcsOperationError:
-        return (False, None)
-    mo_exists = mo.check_prop_match(**kwargs)
-    return (mo_exists, mo if mo_exists else None)
+    roles = [role.strip() for role in name.split(',')]
+    roles_mo = []
+    for role in roles:
+        status, mo = _user_role_exists(handle, user_name, role, **kwargs)
+        if status is False:
+            return False, None
+        roles_mo.append(mo)
+
+    return True, roles_mo
 
 
 def user_role_modify(handle, user_name, name, **kwargs):
@@ -310,7 +336,6 @@ def user_role_modify(handle, user_name, name, **kwargs):
     Raises:
         UcsOperationError: if AaaUserRole is not present
 
-
     Example:
         user_role_modify(handle, user_name="test", name="admin")
     """
@@ -328,7 +353,7 @@ def user_role_remove(handle, user_name, name):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): rolename
+        name (string): rolename, comma separated names also allowed
 
     Returns:
         None
@@ -339,8 +364,10 @@ def user_role_remove(handle, user_name, name):
     Example:
         user_role_remove(handle, user_name="test", name="admin")
     """
-    mo = user_role_get(handle, user_name, name, "user_role_remove")
-    handle.remove_mo(mo)
+    roles = [role.strip() for role in name.split(',')]
+    for role in roles:
+        mo = user_role_get(handle, user_name, role, "user_role_remove")
+        handle.remove_mo(mo)
     handle.commit()
 
 
