@@ -118,6 +118,10 @@ def tacacsplus_provider_exists(handle, name, **kwargs):
                                      caller="tacacsplus_provider_exists")
     except UcsOperationError:
         return (False, None)
+
+    if 'order' in kwargs and kwargs['order'] == 'lowest-available':
+        kwargs.pop('order', None)
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
@@ -354,7 +358,7 @@ def tacacsplus_provider_group_provider_get(handle, group_name, name,
     """
     provider_group_dn = _tacacs_dn + "/providergroup-" + group_name
     provider_ref_dn = provider_group_dn + "/provider-ref-" + name
-    mo = handle.query_dn(provider_dn)
+    mo = handle.query_dn(provider_ref_dn)
     if mo is None:
         raise UcsOperationError(caller,
         "Tacacsplus Provider Reference '%s' does not exist" % provider_ref_dn)
@@ -390,6 +394,10 @@ def tacacsplus_provider_group_provider_exists(handle, group_name, name,
                         caller="tacacsplus_provider_group_provider_exists")
     except UcsOperationError:
         return (False, None)
+
+    if 'order' in kwargs and kwargs['order'] == 'lowest-available':
+        kwargs.pop('order', None)
+
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
