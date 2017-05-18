@@ -221,7 +221,7 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): rolename, also allowed comma separated roles
+        name (string): single role or a comma separated string of multiple roles
         descr (string): descr
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
@@ -293,7 +293,7 @@ def user_role_exists(handle, user_name, name, **kwargs):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): rolename, also allowed comma separated roles
+        name (string): single role or a comma separated string of multiple roles
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
@@ -353,7 +353,7 @@ def user_role_remove(handle, user_name, name):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): rolename, comma separated names also allowed
+        name (string): single role or a comma separated string of multiple roles
 
     Returns:
         None
@@ -509,7 +509,7 @@ def user_locale_remove(handle, user_name, name):
     handle.commit()
 
 
-def password_strength_check(handle, policy_owner="local", descr=None,
+def password_strength_check_enable(handle, policy_owner="local", descr=None,
                             **kwargs):
     """
     Check password strength for locally authenticated user
@@ -530,7 +530,7 @@ def password_strength_check(handle, policy_owner="local", descr=None,
         None
 
     Example:
-        password_strength_check(handle)
+        password_strength_check_enable(handle)
     """
     mo = handle.query_dn(_base_dn)
 
@@ -575,7 +575,7 @@ def password_strength_check_exists(handle, **kwargs):
     return (mo_exists, mo if mo_exists else None)
 
 
-def password_strength_uncheck(handle):
+def password_strength_check_disable(handle):
     """
     un-checks password strength for locally authenticated user
 
@@ -589,7 +589,7 @@ def password_strength_uncheck(handle):
         None
 
     Example:
-        password_strength_uncheck(handle)
+        password_strength_check_disable(handle)
     """
     mo = handle.query_dn(_base_dn)
 
