@@ -203,6 +203,16 @@ def user_delete(handle, name):
     handle.remove_mo(mo)
     handle.commit()
 
+def _user_role_add(handle, user_mo, name, descr=None, **kwargs):
+    """
+    adds single role to an user
+    """
+    from ucsmsdk.mometa.aaa.AaaUserRole import AaaUserRole
+
+    mo = AaaUserRole(parent_mo_or_dn=user_mo, name=name, descr=descr)
+    mo.set_prop_multiple(**kwargs)
+    handle.add_mo(mo, modify_present=True)
+    return mo
 
 def user_role_add(handle, user_name, name, descr=None, **kwargs):
     """
@@ -211,7 +221,7 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): rolename
+        name (string): single role or a comma separated string of multiple roles
         descr (string): descr
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
@@ -230,11 +240,15 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
 
     user = user_get(handle, user_name, "user_role_add")
 
-    mo = AaaUserRole(parent_mo_or_dn=user, name=name, descr=descr)
-    mo.set_prop_multiple(**kwargs)
-    handle.add_mo(mo, modify_present=True)
+    roles = [role.strip() for role in name.split(',')]
+    roles_mo = []
+    for role in roles:
+        role_mo = _user_role_add(handle, user_mo=user, name=role,
+                                 descr=descr, **kwargs)
+        roles_mo.append(role_mo)
+
     handle.commit()
-    return mo
+    return roles_mo
 
 
 def user_role_get(handle, user_name, name, caller="user_role_get"):
@@ -263,6 +277,15 @@ def user_role_get(handle, user_name, name, caller="user_role_get"):
     return mo
 
 
+def _user_role_exists(handle, user_name, name, **kwargs):
+    try:
+        mo = user_role_get(handle, user_name, name, "user_role_exists")
+    except UcsOperationError:
+        return (False, None)
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
 def user_role_exists(handle, user_name, name, **kwargs):
     """
     check if role is already added to user
@@ -270,7 +293,7 @@ def user_role_exists(handle, user_name, name, **kwargs):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): rolename
+        name (string): single role or a comma separated string of multiple roles
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
@@ -284,12 +307,15 @@ def user_role_exists(handle, user_name, name, **kwargs):
     Example:
         user_role_exists(handle, user_name="test", name="admin")
     """
-    try:
-        mo = user_role_get(handle, user_name, name, "user_role_exists")
-    except UcsOperationError:
-        return (False, None)
-    mo_exists = mo.check_prop_match(**kwargs)
-    return (mo_exists, mo if mo_exists else None)
+    roles = [role.strip() for role in name.split(',')]
+    roles_mo = []
+    for role in roles:
+        status, mo = _user_role_exists(handle, user_name, role, **kwargs)
+        if status is False:
+            return False, None
+        roles_mo.append(mo)
+
+    return True, roles_mo
 
 
 def user_role_modify(handle, user_name, name, **kwargs):
@@ -310,7 +336,6 @@ def user_role_modify(handle, user_name, name, **kwargs):
     Raises:
         UcsOperationError: if AaaUserRole is not present
 
-
     Example:
         user_role_modify(handle, user_name="test", name="admin")
     """
@@ -328,7 +353,7 @@ def user_role_remove(handle, user_name, name):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): rolename
+        name (string): single role or a comma separated string of multiple roles
 
     Returns:
         None
@@ -339,8 +364,10 @@ def user_role_remove(handle, user_name, name):
     Example:
         user_role_remove(handle, user_name="test", name="admin")
     """
-    mo = user_role_get(handle, user_name, name, "user_role_remove")
-    handle.remove_mo(mo)
+    roles = [role.strip() for role in name.split(',')]
+    for role in roles:
+        mo = user_role_get(handle, user_name, role, "user_role_remove")
+        handle.remove_mo(mo)
     handle.commit()
 
 
@@ -482,7 +509,7 @@ def user_locale_remove(handle, user_name, name):
     handle.commit()
 
 
-def password_strength_check(handle, policy_owner = "local", descr=None,
+def password_strength_check_enable(handle, policy_owner="local", descr=None,
                             **kwargs):
     """
     Check password strength for locally authenticated user
@@ -503,9 +530,9 @@ def password_strength_check(handle, policy_owner = "local", descr=None,
         None
 
     Example:
-        password_strength_check(handle)
+        password_strength_check_enable(handle)
     """
-    mo = handle.query_dn(_base_dn + "/pwd-profile")
+    mo = handle.query_dn(_base_dn)
 
     args = {'pwd_strength_check': "yes",
             'policy_owner': policy_owner,
@@ -520,7 +547,35 @@ def password_strength_check(handle, policy_owner = "local", descr=None,
     return mo
 
 
-def password_strength_uncheck(handle):
+def password_strength_check_exists(handle, **kwargs):
+    """
+    checks if password strength is checked
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, AaaUserEp MO/None)
+
+    Raises:
+        None
+
+    Example:
+        password_strength_check_exists(handle)
+    """
+    mo = handle.query_dn(_base_dn)
+    if mo is None:
+        return False, None
+
+    kwargs['pwd_strength_check'] = 'yes'
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
+def password_strength_check_disable(handle):
     """
     un-checks password strength for locally authenticated user
 
@@ -534,13 +589,13 @@ def password_strength_uncheck(handle):
         None
 
     Example:
-        password_strength_uncheck(handle)
+        password_strength_check_disable(handle)
     """
-    mo = handle.query_dn(_base_dn + "/pwd-profile")
+    mo = handle.query_dn(_base_dn)
 
     args = {'pwd_strength_check': "no"}
 
-    mo.set_prop_multiple(**kwargs)
+    mo.set_prop_multiple(**args)
     handle.set_mo(mo)
     handle.commit()
     return mo
@@ -624,3 +679,31 @@ def password_profile_modify(handle,
     handle.set_mo(mo)
     handle.commit()
     return mo
+
+
+def password_profile_exists(handle, **kwargs):
+    """
+    checks if password profile exists
+
+    Args:
+        handle (UcsHandle)
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, AaaPwdProfile MO/None)
+
+    Raises:
+        None
+
+    Example:
+        password_profile_exists(handle, change_count="2")
+    """
+    dn = _base_dn + "/pwd-profile"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
+
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
