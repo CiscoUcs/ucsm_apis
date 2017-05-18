@@ -247,11 +247,11 @@ def native_auth_configure(handle, def_role_policy=None,
 
     Args:
         handle (UcsHandle)
-        def_role_policy (string): def_role_policy
+        def_role_policy (string): role policy for remote users
          valid values are "assign-default-role", "no-login"
-        def_login (string): def_login
+        def_login (string): default authentication realm
          valid values are "ldap", "local", "none", "radius", "tacacs"
-        con_login (string): con_login
+        con_login (string): console authentication realm
          valid values are "ldap", "local", "none", "radius", "tacacs"
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -323,10 +323,10 @@ def native_auth_default_configure(handle, realm="local", refresh_period="600",
         handle (UcsHandle)
         realm (string): realm ["ldap", "local", "none", "radius", "tacacs"]
                         Use "none" to disable auth
-        refresh_period (string): refresh_period
-        session_timeout (string): session_timeout
-        provider_group (string): provider_group
-        use2_factor (str): two factor authentication ["yes", "no"]
+        refresh_period (string): web session refresh period (in seconds)
+        session_timeout (string): web session timeout (in seconds)
+        provider_group (string): providergroup
+        use2_factor (string): two factor authentication ["yes", "no"]
         name (string): name
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
@@ -410,7 +410,7 @@ def native_auth_console_configure(handle, realm="local", provider_group="",
         realm (string): realm ["ldap", "local", "none", "radius", "tacacs"]
                         Use "none" to disable auth
         provider_group (string): provider group name
-        use2_factor (str): two factor authentication ["yes", "no"]
+        use2_factor (string): two factor authentication ["yes", "no"]
         name (string): name
         descr (string): description
         **kwargs: Any additional key-value pair of managed object(MO)'s
