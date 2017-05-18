@@ -40,14 +40,14 @@ def timezone_set(handle, timezone, policy_owner="local",
 
     Example:
         To Set Time Zone:
-            mo = time_zone_set(handle, "Asia/Kolkata")
+            mo = timezone_set(handle, "Asia/Kolkata")
 
         To Un-Set Time Zone:
-            mo = time_zone_set(handle, "")
+            mo = timezone_set(handle, "")
     """
     mo = handle.query_dn(_base_dn + "/datetime-svc")
     if not mo:
-        raise UcsOperationError("time_zone_set",
+        raise UcsOperationError("timezone_set",
                                  "timezone does not exist")
 
     args = {'timezone': timezone,
@@ -82,7 +82,7 @@ def timezone_exists(handle, **kwargs):
         None
 
     Example:
-        time_zone_exists(handle, timezone="Asia/Kolkata")
+        timezone_exists(handle, timezone="Asia/Kolkata")
     """
     mo = handle.query_dn(_base_dn + "/datetime-svc")
     if not mo:
