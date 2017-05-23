@@ -189,7 +189,7 @@ def boot_policy_delete(handle, name, org_dn="org-root"):
     handle.commit()
 
 
-def _boot_security_configure(handle, name, org_dn, secure_boot):
+def _boot_security_configure(handle, name, org_dn, secure_boot, **kwargs):
     from ucsmsdk.mometa.lsboot.LsbootBootSecurity import LsbootBootSecurity
 
     boot_policy = boot_policy_get(handle, name, org_dn,
@@ -198,13 +198,21 @@ def _boot_security_configure(handle, name, org_dn, secure_boot):
         raise UcsOperationError("boot_security_enable",
             "boot mode should be equal to 'uefi' to configure boot security")
 
-    LsbootBootSecurity(parent_mo_or_dn=boot_policy, secure_boot=secure_boot)
-    handle.set_mo(boot_policy)
+    mo = LsbootBootSecurity(parent_mo_or_dn=boot_policy)
+
+    args = {
+            'secure_boot': secure_boot
+        }
+
+    mo.set_prop_multiple(**args)
+
+    mo.set_prop_multiple(**kwargs)
+    handle.add_mo(boot_policy, modify_present=True)
     handle.commit()
-    return boot_policy
+    return mo
 
 
-def boot_security_enable(handle, name, org_dn="org-root"):
+def boot_security_enable(handle, name, org_dn="org-root", **kwargs):
     """
     enables boot security of boot policy
 
@@ -214,7 +222,7 @@ def boot_security_enable(handle, name, org_dn="org-root"):
         org_dn (string): org dn
 
     Returns:
-        LsbootPolicy: managed object
+        LsbootBootSecurity: managed object
 
     Raises:
         UcsOperationError: if LsbootPolicy is not present or
@@ -224,7 +232,39 @@ def boot_security_enable(handle, name, org_dn="org-root"):
         boot_security_enable(handle, name="sample_boot",
                              org_dn="org-root/org-test")
     """
-    return _boot_security_configure(handle, name, org_dn, secure_boot="yes")
+    return _boot_security_configure(handle, name, org_dn, secure_boot="yes",
+                                    **kwargs)
+
+def boot_security_exists(handle, name, org_dn="org-root", **kwargs):
+    """
+    checks if boot security enabled for a boot policy
+
+    Args:
+        handle (UcsHandle)
+        name (string): boot policy name
+        org_dn (string): org dn
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, LsbootBootSecurity MO/None)
+
+    Raises:
+        None
+
+    Example:
+        boot_security_exists(handle, name="sample_boot",
+                          org_dn="org-root/org-finance")
+    """
+    dn = org_dn + "/boot-policy-" + name + "/boot-security"
+    mo = handle.query_dn(dn)
+    if mo is None:
+        return False, None
+
+    kwargs['secure_boot'] = "yes"
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
 
 
 def boot_security_disable(handle, name, org_dn="org-root"):
@@ -667,8 +707,18 @@ def _vmedia_device_add(parent_mo, device_name, device_order, **kwargs):
                              order=device_order, **kwargs)
 
 
-def _efi_shell_device_add():
-    pass
+def _efi_device_add(parent_mo, device_order, **kwargs):
+    class_id = "LsbootEFIShell"
+
+    mo = [mo for mo in parent_mo.child if mo.get_class_id() == class_id]
+    if mo:
+        raise UcsOperationError(
+        "__efi_device_add", "Device '%s' already exist at order '%s'" %
+        (device_name, mo[0].order))
+
+    class_struct = load_class(class_id)
+    class_obj = class_struct(parent_mo_or_dn=parent_mo,
+                             order=device_order, **kwargs)
 
 
 def _validate_device_combination(devices):
@@ -738,7 +788,7 @@ def _device_add(handle, boot_policy, devices):
         elif device_name == "iscsi":
             _iscsi_device_add(boot_policy, device_order, **device_props)
         elif device_name == "efi":
-            _efi_shell_device_add()
+            _efi_device_add(boot_policy, device_order, **device_props)
         else:
             raise UcsOpeartionError(
                 "_device_add",
@@ -752,6 +802,8 @@ def _boot_policy_order_clear(handle, boot_policy):
     if mo_list is None:
         return
     for mo in mo_list:
+        if mo.get_class_id() == "LsbootBootSecurity":
+            continue
         handle.remove_mo(mo)
 
     if boot_policy.reboot_on_update in ucsgenutils.AFFIRMATIVE_LIST:
@@ -768,7 +820,9 @@ def _extract_device_from_bp_child(bp_child):
 
     for ch_ in bp_child:
         class_id = ch_.get_class_id()
-        if class_id == "LsbootSan":
+        if class_id == "LsbootBootSecurity":
+            continue
+        elif class_id == "LsbootSan":
             bp_devices["san"] = ch_
         elif class_id == "LsbootLan":
             bp_devices["lan"] = ch_
@@ -782,6 +836,10 @@ def _extract_device_from_bp_child(bp_child):
                 local_class_id = local_ch_.get_class_id()
                 device = _local_device_invert[local_class_id]
                 bp_devices[device] = local_ch_
+        elif class_id == "LsbootIScsi":
+            bp_devices["iscsi"] = ch_
+        elif class_id == "LsbootEFIShell":
+            bp_devices["efi"] = ch_
         else:
             raise UcsOpeationError("_compare_boot_policy", "Unknown Device.")
 
@@ -1011,6 +1069,7 @@ def _compare_iscsi(existing_iscsi, expected_iscsi):
 
     existing_child = existing_iscsi.child
     expected_child = expected_iscsi.child
+
     if len(existing_child) != len(expected_child):
         raise UcsOperationError("_compare_boot_policy",
                                 "Child count mismatch for 'iscsi'.")
@@ -1019,8 +1078,8 @@ def _compare_iscsi(existing_iscsi, expected_iscsi):
     if len(existing_child) == 1:
         _device_compare(existing_child[0],
                         'iscsi',
-                        type=expected_iscsi.type,
-                        i_scsi_vnic_name=expected_iscsi.i_scsi_vnic_name)
+                        type=expected_child[0].type,
+                        i_scsi_vnic_name=expected_child[0].i_scsi_vnic_name)
     if len(existing_child) == 2:
         existing_child_primary, existing_child_secondary =\
             _child_pri_sec_filter(existing_child)
@@ -1040,10 +1099,18 @@ def _compare_iscsi(existing_iscsi, expected_iscsi):
             i_scsi_vnic_name=expected_child_secondary.i_scsi_vnic_name)
 
 
+def _compare_efi(existing_efi, expected_efi):
+    _device_compare(existing_efi, 'efi', order=expected_efi.order)
+
+
 def _compare_boot_policy(existing_boot_policy, expected_boot_policy):
     # check child count
     existing_bp_child = existing_boot_policy.child
     expected_bp_child = expected_boot_policy.child
+
+    existing_bp_child = [ch for ch in existing_bp_child
+                         if ch.get_class_id() != "LsbootBootSecurity"]
+
     if len(existing_bp_child) != len(expected_bp_child):
         raise UcsOperationError("_compare_boot_policy",
                                 "Child count mismatch.")
@@ -1092,15 +1159,18 @@ def _compare_boot_policy(existing_boot_policy, expected_boot_policy):
         elif device_name == "iscsi":
             _compare_iscsi(existing_bp_device,
                            expected_bp_device)
+        elif device_name == "efi":
+            _compare_efi(existing_bp_device,
+                         expected_bp_device)
 
 
-def boot_policy_order_set(handle, boot_policy_dn, devices):
+def boot_policy_order_set(handle, name, devices, org_dn="org-root"):
     """
     sets boot order for a given boot policy
 
     Args:
         handle (UcsHandle)
-        boot_policy_dn (string): boot policy dn
+        name (string): boot policy name
         devices (list of dict):
          [
             {
@@ -1131,6 +1201,7 @@ def boot_policy_order_set(handle, boot_policy_dn, devices):
 
          *note - mandatory keys are 'device_name' and 'device_order'
                  other key depends on the device.
+        org_dn (string): org dn
 
     Returns:
         None
@@ -1248,19 +1319,15 @@ def boot_policy_order_set(handle, boot_policy_dn, devices):
         ]
 
         def test_boot_policy_order_set():
-            boot_policy_order_set(handle, boot_policy_dn, devices)
+            boot_policy_order_set(handle, name="sample_boot", devices=devices)
 
     """
     # check if devices is not empty
     if not devices:
         raise UcsOperationError("boot_policy_order_set", "No device present.")
 
-    boot_policy = handle.query_dn(boot_policy_dn)
-    if not boot_policy:
-        raise UcsOpeationError(
-            "boot_policy_order_set",
-            "BootPollicy '%s' does not exist." %
-            boot_policy_dn)
+    boot_policy = boot_policy_get(handle=handle, name=name, org_dn=org_dn,
+                                  caller="boot_policy_order_set")
 
     # Removes all the devices from the boot order
     _boot_policy_order_clear(handle, boot_policy)
@@ -1271,13 +1338,15 @@ def boot_policy_order_set(handle, boot_policy_dn, devices):
     handle.commit()
 
 
-def boot_policy_order_exists(handle, boot_policy_dn, devices, debug=False):
+def boot_policy_order_exists(handle, name, devices, org_dn="org-root",
+                             debug=False):
     """
     checks if a given boot order exists for a given boot policy
 
     Args:
         handle (UcsHandle)
-        boot_policy_dn (string): boot policy dn
+        name (string): boot policy name
+        org_dn (string): org dn
         devices (list of dict):
          [
             {
@@ -1317,22 +1386,18 @@ def boot_policy_order_exists(handle, boot_policy_dn, devices, debug=False):
         UcsOperationError:
 
     Example:
-        boot_policy_order_exists(handle, boot_policy_dn, devices)
+        boot_policy_order_exists(handle, name="sample_boot", devices=devices)
     """
     # create the boot_policy_order_tree
     try:
         # check if devices is not empty
         if not devices:
             raise UcsOperationError(
-                "boot_policy_order_set",
+                "boot_policy_order_exists",
                 "No device present.")
 
-        boot_policy = handle.query_dn(boot_policy_dn)
-        if not boot_policy:
-            raise UcsOpeationError(
-                "boot_policy_order_set",
-                "BootPollicy '%s' does not exist." %
-                boot_policy_dn)
+        boot_policy = boot_policy_get(handle=handle, name=name, org_dn=org_dn,
+                                      caller="boot_policy_order_exists")
 
         # Add devices and configure boot order
         _device_add(handle, boot_policy, devices)
@@ -1342,11 +1407,11 @@ def boot_policy_order_exists(handle, boot_policy_dn, devices, debug=False):
     expected_boot_policy = boot_policy
 
     try:
-        response = handle.query_dn(dn=boot_policy_dn,
+        response = handle.query_dn(dn=boot_policy.dn,
                                    hierarchy=True,
                                    need_response=True)
         existing_boot_policy = response.out_configs.child[0]
-    except exception as err:
+    except Exception as err:
         if debug:
             import traceback
             print str(traceback.print_exc())
