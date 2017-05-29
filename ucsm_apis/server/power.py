@@ -14,8 +14,8 @@
 from ..utils.utils import blade_dn_get
 from ..utils.utils import rack_dn_get
 from ucsmsdk.ucsexception import UcsOperationError
-from ucsmsdk.mometa.ls.LsPower import LsPowerConsts
 from ucsmsdk.mometa.ls.LsPower import LsPower
+from ucsmsdk.mometa.ls.LsPower import LsPowerConsts
 
 
 def _server_dn_get(chassis_id=None, blade_id=None, rack_id=None):
@@ -37,6 +37,7 @@ def _service_profile_power_set(
         blade_id=None,
         rack_id=None,
         state=None):
+
     dn = _server_dn_get(
         chassis_id=chassis_id,
         blade_id=blade_id,
@@ -44,13 +45,21 @@ def _service_profile_power_set(
     blade_mo = handle.query_dn(dn)
     if blade_mo is None:
         raise UcsOperationError(
-            "server_power_set: Failed to set server power",
+            "_service_profile_power_set: Failed to set server power",
             "server %s does not exist" % (dn))
 
     if not blade_mo.assigned_to_dn:
         raise UcsOperationError(
-            "server_power_set: Failed to set server power",
+            "_service_profile_power_set: Failed to set server power",
             "server %s is not associated to a service profile" % (dn))
+
+    if blade_mo.association != "associated":
+        raise UcsOperationError(
+            "_service_profile_power_set: Failed to set server power",
+            "server %s is still in process of associating a service profile\
+            OR there might be faults.Please wait or check.Current association\
+            state is %s" % (dn, blade_mo.association))
+
 
     sp_mo = handle.query_dn(blade_mo.assigned_to_dn)
     LsPower(
@@ -72,7 +81,6 @@ def server_power_exists(handle, chassis_id=None, blade_id=None, rack_id=None):
     if blade_mo.oper_power == "on":
         return True
     return False
-
 
 
 def server_power_on(handle, chassis_id=None, blade_id=None, rack_id=None):
@@ -130,63 +138,6 @@ def server_power_off(handle, chassis_id=None, blade_id=None, rack_id=None):
         blade_id=blade_id,
         rack_id=rack_id,
         state=LsPowerConsts.STATE_DOWN)
-
-
-def server_power_admin_up(handle, chassis_id=None, blade_id=None, rack_id=None):
-    """
-    Power-On the server.
-
-    Args:
-        handle (UcscHandle)
-        chassis_id (int): chassis id
-        blade_id (int): blade id
-        rack_id (int): rack id
-
-    Returns:
-        None
-
-    Raises:
-        UcsOperationError
-
-    Example:
-        server_power_on(handle, chassis_id=1, blade_id=2)
-        server_power_on(handle, rack_id=1)
-    """
-    _service_profile_power_set(
-        handle=handle,
-        chassis_id=chassis_id,
-        blade_id=blade_id,
-        rack_id=rack_id,
-        state=LsPowerConsts.STATE_ADMIN_UP)
-
-
-def server_power_admin_down(handle, chassis_id=None, blade_id=None, rack_id=None):
-    """
-    Power-Off the server.
-
-    Args:
-        handle (UcscHandle)
-        chassis_id (int): chassis id
-        blade_id (int): blade id
-        rack_id (int): rack id
-
-    Returns:
-        None
-
-    Raises:
-        UcsOperationError
-
-    Example:
-        server_power_off(handle, chassis_id=1, blade_id=2)
-        server_power_off(handle, rack_id=1)
-    """
-
-    _service_profile_power_set(
-        handle=handle,
-        chassis_id=chassis_id,
-        blade_id=blade_id,
-        rack_id=rack_id,
-        state=LsPowerConsts.STATE_ADMIN_DOWN)
 
 
 def server_power_cycle_wait(handle, chassis_id=None, blade_id=None, rack_id=None):
@@ -267,72 +218,6 @@ def _server_admin_power_set(
     handle.commit()
 
 
-def server_admin_power_up(
-        handle,
-        chassis_id=None,
-        blade_id=None,
-        rack_id=None):
-    """
-    Triggers a graceful OS shutdown and powercycle operation on the specified server.
-
-    Args:
-        handle (UcscHandle)
-        chassis_id (int): chassis id
-        blade_id (int): blade id
-        rack_id (int): rack id
-
-    Returns:
-        None
-
-    Raises:
-        UcsOperationError
-
-    Example:
-        server_power_admin_down(handle, chassis_id=1, blade_id=2)
-        server_power_admin_down(handle, rack_id=1)
-    """
-
-    _server_admin_power_set(
-        handle=handle,
-        chassis_id=chassis_id,
-        blade_id=blade_id,
-        rack_id=rack_id,
-        state="admin-up")
-
-
-def server_admin_power_down(
-        handle,
-        chassis_id=None,
-        blade_id=None,
-        rack_id=None):
-    """
-    Triggers a graceful OS shutdown and powercycle operation on the specified server.
-
-    Args:
-        handle (UcscHandle)
-        chassis_id (int): chassis id
-        blade_id (int): blade id
-        rack_id (int): rack id
-
-    Returns:
-        None
-
-    Raises:
-        UcsOperationError
-
-    Example:
-        server_power_admin_down(handle, chassis_id=1, blade_id=2)
-        server_power_admin_down(handle, rack_id=1)
-    """
-
-    _server_admin_power_set(
-        handle=handle,
-        chassis_id=chassis_id,
-        blade_id=blade_id,
-        rack_id=rack_id,
-        state="admin-down")
-
-
 def server_admin_power_cycle_wait(
         handle,
         chassis_id=None,
@@ -354,8 +239,8 @@ def server_admin_power_cycle_wait(
         UcsOperationError
 
     Example:
-        server_power_cycle_wait(handle, chassis_id=1, blade_id=2)
-        server_power_cycle_wait(handle, rack_id=1)
+        server_admin_power_cycle_wait(handle, chassis_id=1, blade_id=2)
+        server_admin_power_cycle_wait(handle, rack_id=1)
     """
 
     _server_admin_power_set(
@@ -387,8 +272,8 @@ def server_admin_power_cycle_immediate(
         UcsOperationError
 
     Example:
-        server_power_cycle_immediate(handle, chassis_id=1, blade_id=2)
-        server_power_cycle_immediate(handle, rack_id=1)
+        server_admin_power_cycle_immediate(handle, chassis_id=1, blade_id=2)
+        server_admin_power_cycle_immediate(handle, rack_id=1)
     """
 
     _server_admin_power_set(
