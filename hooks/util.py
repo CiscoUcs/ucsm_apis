@@ -7,20 +7,18 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import subprocess
+import os
+
+devnull = open(os.devnull, 'w')
 
 
 class CalledProcessError(RuntimeError):
     pass
 
 
-def exists(cmd):
-    out, err, rc = cmd_output('which', '%s' % cmd)
-    return rc == 0
-
-
 def added_files():
     out, err, rc = cmd_output('git', 'diff', '--staged', '--name-only')
-    return set(out.splitlines())
+    return set([f for f in out.splitlines() if f.endswith('py')])
 
 
 def cmd_output(*cmd, **kwargs):
@@ -35,3 +33,19 @@ def cmd_output(*cmd, **kwargs):
     if retcode is not None and proc.returncode != retcode:
         raise CalledProcessError(cmd, retcode, proc.returncode, stdout, stderr)
     return stdout, stderr, proc.returncode
+
+
+def execute(cmd, silent=False):
+    if silent:
+        params = {
+                'stdout': devnull,
+                'stderr': devnull,
+                }
+    else:
+        params = {}
+    retcode = subprocess.call(cmd.split(), **params)
+    return retcode
+
+
+def exists(cmd):
+    return execute('which %s' % cmd, silent=True) == 0

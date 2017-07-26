@@ -23,6 +23,7 @@ def check_ast(argv=None):
         try:
             ast.parse(open(filename, 'rb').read(), filename=filename)
         except SyntaxError:
+            print("***** ast check failed *****")
             print('{}: failed parsing with {} {}:'.format(
                 filename,
                 platform.python_implementation(),
