@@ -16,13 +16,14 @@ This module performs operations related to ip pools.
 """
 
 
-from ucsmsdk import ucsgenutils
 from ucsmsdk.ucsexception import UcsOperationError
-from ucsmsdk.ucscoreutils import load_class
+
 
 def ip_block_create(handle, pool_name, org_dn="org-root",
-                    start_ip=None, end_ip=None, sm=None, gw=None, prim_dns=None,
+                    start_ip=None, end_ip=None, sm=None, gw=None,
+                    prim_dns=None,
                     sec_dns=None, **kwargs):
+
     """
     Creates ip block
 
@@ -39,13 +40,13 @@ def ip_block_create(handle, pool_name, org_dn="org-root",
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
                   This should be used for future version compatibility.
-    
+
     Returns:
         Ippoolblock: managed object
-    
+
     Raises:
         UcsOperationError: if Org_dn is not present
-    
+
     Example:
         ip_block_create:(handle,
                          pool_name="ext-mgmt",
@@ -65,9 +66,9 @@ def ip_block_create(handle, pool_name, org_dn="org-root",
         raise UcsOperationError("ip_block_create", "Org {} \
                                  does not exist".format(org_dn))
     elif not pool:
-        raise UcsOperationError("ip_block_create","IP Pool {} \
+        raise UcsOperationError("ip_block_create", "IP Pool {} \
                                  does not exist".format(pool_name))
-    
+
     mo = IppoolBlock(parent_mo_or_dn=dn, def_gw=gw, r_from=start_ip,
                      to=end_ip, subnet=sm)
     mo.set_prop_multiple(**kwargs)
@@ -75,8 +76,10 @@ def ip_block_create(handle, pool_name, org_dn="org-root",
     handle.commit()
     return mo
 
+
 def ip_block_get(handle, pool_name, org_dn="org-root",
                  start_ip=None, end_ip=None, caller="ip_block_get"):
+
     """
     gets ip block
 
@@ -90,10 +93,10 @@ def ip_block_get(handle, pool_name, org_dn="org-root",
 
     Returns:
         IppoolBlock: managed object
-    
+
     Raises:
         UcsOperationError: if Ippoolblock is not present
-    
+
     Example:
         ip_block_get(handle,
                      pool_name="ext-mgmt",
@@ -102,7 +105,7 @@ def ip_block_get(handle, pool_name, org_dn="org-root",
                      end_ip="192.168.128.20")
 
     """
-    
+
     dn = org_dn + "/ip-pool-" + pool_name + "/block-" + start_ip + "-" + end_ip
     mo = handle.query_dn(dn)
     if not mo:
@@ -110,8 +113,10 @@ def ip_block_get(handle, pool_name, org_dn="org-root",
                                 does not exist".format(dn))
     return mo
 
+
 def ip_block_exists(handle, pool_name, org_dn="org-root", start_ip=None,
                     end_ip=None, **kwargs):
+
     """
     checks if ip block exists
 
@@ -124,33 +129,35 @@ def ip_block_exists(handle, pool_name, org_dn="org-root", start_ip=None,
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
-    
+
     Returns:
         (True/False, IppoolBlock MO/None)
-    
+
     Raises:
         None
-    
+
     Example:
         ip_block_exists:(handle,
-                         pool_name="ext-mgmt", 
+                         pool_name="ext-mgmt",
                          org_dn="org-root",
                          start_ip="192.168.128.10",
                          end_ip="192.168.128.20")
 
     """
 
-    dn = org_dn + "/ip-pool-" + pool_name
     try:
         mo = ip_block_get(handle=handle, pool_name=pool_name, org_dn=org_dn,
-                          start_ip=start_ip, end_ip=end_ip, caller="ip_block_exists")
+                          start_ip=start_ip, end_ip=end_ip,
+                          caller="ip_block_exists")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
 
+
 def ip_block_modify(handle, pool_name, org_dn="org-root",
                     start_ip=None, end_ip=None, **kwargs):
+
     """
     modifies ip block
 
@@ -163,13 +170,13 @@ def ip_block_modify(handle, pool_name, org_dn="org-root",
         **kwargs: key-value pair of managed object(MO) property and value, Use
                   'print(ucscoreutils.get_meta_info(<classid>).config_props)'
                   to get all configurable properties of class
-    
+
     Returns:
         IppoolBlock: managed object
-    
+
     Raises:
         UcsOperationError: if Ippoolblock is not present
-    
+
     Example:
         ip_block_modify(handle,
                      pool_name="ext-mgmt",
@@ -187,7 +194,9 @@ def ip_block_modify(handle, pool_name, org_dn="org-root",
     handle.commit()
     return mo
 
-def ip_block_delete(handle, pool_name=None, org_dn="org-root", start_ip=None, end_ip=None):
+
+def ip_block_delete(handle, pool_name=None, org_dn="org-root",
+                    start_ip=None, end_ip=None):
 
     """
     deletes ip block
@@ -198,13 +207,13 @@ def ip_block_delete(handle, pool_name=None, org_dn="org-root", start_ip=None, en
         org_dn (string): org dn
         start_ip (string): 1st ip in the block
         end_ip (string): last ip in the block
-    
+
     Returns:
         None
-    
+
     Raises:
         UcsOperationError: if Ippoolblock is not present
-    
+
     Example:
         ip_block_delete(handle,
                      pool_name="ext-mgmt",
