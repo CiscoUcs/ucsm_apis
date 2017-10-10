@@ -18,6 +18,176 @@ This module performs operations related to ip pools.
 
 from ucsmsdk.ucsexception import UcsOperationError
 
+def ip_pool_create(handle, name, org_dn="org-root",
+                   descr=None, **kwargs):
+
+    """
+    Creates ip pool
+
+    Args:
+        handle (UCSHandle)
+        name (string): Name of ip pool
+        org_dn (string): org dn
+        descr (string): description
+        **kwargs: Any additional key-value pair of managed object(MO)'s
+                  property and value, which are not part of regular args.
+                  This should be used for future version compatibility.
+
+    Returns:
+        Ippoolpool: managed object
+
+    Raises:
+        UcsOperationError: if Org_dn is not present
+
+    Example:
+        ip_pool_create(handle,
+                       "server_pool",
+                       org_dn="org-root",
+                       descr="Pool for Servers")
+    """
+
+    from ucsmsdk.mometa.ippool.IppoolPool import IppoolPool
+
+    obj = handle.query_dn(org_dn)
+    if not obj:
+        raise UcsOperationError("ip_pool_create", "Org {} \
+                                 does not exist".format(org_dn))
+
+    mo = IppoolPool(parent_mo_or_dn=dn, name=name,
+                    descr=descr)
+    mo.set_prop_multiple(**kwargs)
+    handle.add_mo(mo, modify_present=True)
+    handle.commit()
+    return mo
+
+
+def ip_pool_get(handle, name, org_dn="org-root",
+                caller="ip_pool_get"):
+
+    """
+    Gets ip pool
+
+    Args:
+        handle (UCSHandle)
+        name (string): Name of ip pool
+        org_dn (string): org dn
+        caller (string): caller method name
+
+    Returns:
+        IppoolPool: managed object
+
+    Raises:
+        UcsOperationError: if IppoolPool is not present
+
+    Example:
+        ip_pool_get(handle,
+                    "test_pool",
+                    org_dn="org-root")
+    """
+
+    dn = org_dn + "/ip-pool-" + name
+    mo = handle.query_dn(dn)
+    if not mo:
+        raise UcsOperationError(caller, "IP Pool {} \
+                                does not exist".format(dn))
+    return mo
+
+
+def ip_pool_exists(handle, name, org_dn="org-root", **kwargs):
+
+    """
+    checks if ip pool exists
+
+    Args:
+        handle (UcsHandle)
+        name (string): Name of ip pool
+        org_dn (string): org dn
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        (True/False, IppoolPool MO/None)
+
+    Raises:
+        None
+
+    Example:
+        ip_pool_exists:(handle,
+                         name="ext-mgmt",
+                         org_dn="org-root",)
+    """
+
+    try:
+        mo = ip_pool_get(handle=handle, name=name, org_dn=org_dn,
+                         caller="ip_pool_exists")
+    except UcsOperationError:
+        return (False, None)
+    mo_exists = mo.check_prop_match(**kwargs)
+    return (mo_exists, mo if mo_exists else None)
+
+
+def ip_pool_modify(handle, name, org_dn="org-root",
+                   **kwargs):
+
+    """
+    modifies ip pool
+
+    Args:
+        handle (UcsHandle)
+        name (string): Name of ip pool
+        org_dn (string): org dn
+        **kwargs: key-value pair of managed object(MO) property and value, Use
+                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+                  to get all configurable properties of class
+
+    Returns:
+        IppoolPool: managed object
+
+    Raises:
+        UcsOperationError: if IppoolPool is not present
+
+    Example:
+        ip_pool_modify(handle,
+                     name="test-pool",
+                     org_dn="org-root")
+    """
+
+    mo = ip_pool_get(handle=handle, name=name, org_dn=org_dn,
+                     caller="ip_pool_modify")
+    mo.set_prop_multiple(**kwargs)
+    handle.set_mo(mo)
+    handle.commit()
+    return mo
+
+
+def ip_pool_delete(handle, name, org_dn="org-root"):
+
+    """
+    deletes ip pool
+
+    Args:
+        handle (UcsHandle)
+        name (string): Name of ip pool
+        org_dn (string): org dn
+
+    Returns:
+        None
+
+    Raises:
+        UcsOperationError: if IppoolPool is not present
+
+    Example:
+        ip_pool_delete(handle,
+                       name="test-pool",
+                       org_dn="org-root")
+    """
+
+    mo = ip_pool_get(handle=handle, name=name, org_dn=org_dn,
+                     caller="ip_pool_delete")
+    handle.remove_mo(mo)
+    handle.commit()
+
 
 def ip_block_create(handle, pool_name, org_dn="org-root",
                     start_ip=None, end_ip=None, sm=None, gw=None,
@@ -48,13 +218,13 @@ def ip_block_create(handle, pool_name, org_dn="org-root",
         UcsOperationError: if Org_dn is not present
 
     Example:
-        ip_block_create:(handle,
-                         pool_name="ext-mgmt",
-                         org_dn="org-root",
-                         start_ip="192.168.128.10",
-                         end_ip="192.168.128.20",
-                         sm="255.255.255.0",
-                         gw="192.168.128.1")
+        ip_block_create(handle,
+                        pool_name="ext-mgmt",
+                        org_dn="org-root",
+                        start_ip="192.168.128.10",
+                        end_ip="192.168.128.20",
+                        sm="255.255.255.0",
+                        gw="192.168.128.1")
     """
 
     from ucsmsdk.mometa.ippool.IppoolBlock import IppoolBlock
