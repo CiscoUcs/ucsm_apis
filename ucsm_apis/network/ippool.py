@@ -15,8 +15,10 @@
 This module performs operations related to ip pools.
 """
 
-
+from ucsmsdk.mometa.ippool.IppoolPool import IppoolPool
+from ucsmsdk.mometa.ippool.IppoolBlock import IppoolBlock
 from ucsmsdk.ucsexception import UcsOperationError
+
 
 def ip_pool_create(handle, name, org_dn="org-root",
                    descr=None, **kwargs):
@@ -46,14 +48,13 @@ def ip_pool_create(handle, name, org_dn="org-root",
                        descr="Pool for Servers")
     """
 
-    from ucsmsdk.mometa.ippool.IppoolPool import IppoolPool
 
     obj = handle.query_dn(org_dn)
     if not obj:
         raise UcsOperationError("ip_pool_create", "Org {} \
                                  does not exist".format(org_dn))
 
-    mo = IppoolPool(parent_mo_or_dn=dn, name=name,
+    mo = IppoolPool(parent_mo_or_dn=obj, name=name,
                     descr=descr)
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, modify_present=True)
@@ -227,7 +228,6 @@ def ip_block_create(handle, pool_name, org_dn="org-root",
                         gw="192.168.128.1")
     """
 
-    from ucsmsdk.mometa.ippool.IppoolBlock import IppoolBlock
 
     obj = handle.query_dn(org_dn)
     dn = org_dn + "/ip-pool-" + pool_name
