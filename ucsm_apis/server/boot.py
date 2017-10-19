@@ -769,7 +769,7 @@ def _device_add(handle, boot_policy, devices):
     for device in devices:
         device_name = device["device_name"]
         device_order = str(device["device_order"])
-        device_props = {key: value for key, value in device.iteritems()
+        device_props = {key: value for key, value in device.items()
                         if key not in ["device_name", "device_order"]}
         if device_name in _local_devices:
             if not ls_boot_storage_exist:
