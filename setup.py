@@ -10,7 +10,7 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    # TODO: put package requirements here
+    'ucsmsdk'
 ]
 
 test_requirements = [
@@ -48,6 +48,12 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
     ],
-    tests_require=['nose'],
-    test_suite='nose.collector',
+    tests_require=[
+        'nose',
+        'mock',
+        'pytest',
+        'pytest-mock',
+        'pytest-runner'
+        ],
+    test_suite='tests',
 )

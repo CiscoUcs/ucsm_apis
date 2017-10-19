@@ -1414,7 +1414,7 @@ def boot_policy_order_exists(handle, name, devices, org_dn="org-root",
     except Exception as err:
         if debug:
             import traceback
-            print str(traceback.print_exc())
+            print(str(traceback.print_exc()))
         return False, None
 
     try:
