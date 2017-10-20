@@ -1,20 +1,20 @@
+import pytest
 from mock import Mock, patch
 from nose.tools import assert_raises
 from nose.tools import assert_equal
 
 from ucsmsdk.ucshandle import UcsHandle
-from ucsmsdk.ucsexception import UcsOperationError
 from ucsmsdk.mometa.lsboot.LsbootPolicy import LsbootPolicy
 
-from ucsm_apis.server.boot import *
+from ucsm_apis.server import boot
 
 handle = UcsHandle("10.10.10.10", "username", "password")
 boot_policy_dn = "org-root/boot-policy-test"
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_local_lun_001(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -33,14 +33,14 @@ def test_boot_local_lun_001(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_lun_add failed, error: Instance of Local Lun already added at order '1'"
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_local_lun_002(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -62,14 +62,14 @@ def test_boot_local_lun_002(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_lun_add failed, error: Instance of Local Lun already added at order '1'"
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_local_lun_003(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -91,14 +91,14 @@ def test_boot_local_lun_003(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_lun_add failed, error: Required parameter 'lun_name' or 'type' missing."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_local_lun_004(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -122,14 +122,14 @@ def test_boot_local_lun_004(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_lun_add failed, error: Instance of Local Lun of type 'primary' already added at  order '1'."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_local_lun_005(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -159,14 +159,14 @@ def test_boot_local_lun_005(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_lun_add failed, error: Both instance of Local Lun already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_local_jbod_001(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -188,14 +188,14 @@ def test_boot_local_jbod_001(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_jbod_add failed, error: Instance of Local JBOD already added at order '1'"
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_local_jbod_002(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -210,15 +210,15 @@ def test_boot_local_jbod_002(mock_login, mock_query_dn, mock_order_clear):
                 },
     ]
 
-    expected_error_message = "_local_jbod_add() takes exactly 3 arguments (2 given)"
-    with assert_raises(TypeError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    expected_error_message = "_local_jbod_add() missing 1 required positional argument: 'slot_number'"
+    with pytest.raises(TypeError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_embedded_disk_001(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -237,14 +237,14 @@ def test_boot_embedded_disk_001(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_embedded_disk_add failed, error: Instance of Local Embedded Disk already added at order '1'"
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_embedded_disk_002(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -266,14 +266,14 @@ def test_boot_embedded_disk_002(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_embedded_disk_add failed, error: Instance of Local Embedded Disk already added at order '1'"
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_embedded_disk_003(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -295,14 +295,14 @@ def test_boot_embedded_disk_003(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_embedded_disk_add failed, error: Required parameter 'slot_number' or 'type' missing."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_embedded_disk_004(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -326,14 +326,14 @@ def test_boot_embedded_disk_004(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_embedded_disk_add failed, error: Instance of Local Embedded Disk  of type 'primary' already added at  order '1'."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_embedded_disk_005(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -363,14 +363,14 @@ def test_boot_embedded_disk_005(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_embedded_disk_add failed, error: Both instance of Local Embedded Disk already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_lan_001(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -385,15 +385,15 @@ def test_boot_lan_001(mock_login, mock_query_dn, mock_order_clear):
                 },
     ]
 
-    expected_error_message = "_lan_device_add() takes exactly 3 arguments (2 given)"
-    with assert_raises(TypeError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    expected_error_message = "_lan_device_add() missing 1 required positional argument: 'vnic_name'"
+    with pytest.raises(TypeError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_lan_002(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -420,14 +420,14 @@ def test_boot_lan_002(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_lan_device_add failed, error: Both instances of Lan Device are already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_iscsi_001(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -444,14 +444,14 @@ def test_boot_iscsi_001(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_iscsi_device_add() got an unexpected keyword argument 'type'"
-    with assert_raises(TypeError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(TypeError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_iscsi_002(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -466,15 +466,15 @@ def test_boot_iscsi_002(mock_login, mock_query_dn, mock_order_clear):
                 },
     ]
 
-    expected_error_message = "_iscsi_device_add() takes exactly 3 arguments (2 given)"
-    with assert_raises(TypeError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    expected_error_message = "_iscsi_device_add() missing 1 required positional argument: 'vnic_name'"
+    with pytest.raises(TypeError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_iscsi_003(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -501,14 +501,14 @@ def test_boot_iscsi_003(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_iscsi_device_add failed, error: Both instances of ISCSI Device are already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_san_001(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -529,14 +529,14 @@ def test_boot_san_001(mock_login, mock_query_dn, mock_order_clear):
 
 
     expected_error_message = "_san_device_add failed, error: Instance of San device is already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_san_002(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -563,14 +563,14 @@ def test_boot_san_002(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_san_device_add failed, error: Instance of San device is already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_san_003(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -598,14 +598,14 @@ def test_boot_san_003(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_san_device_add failed, error: Instance of 'primary' san image is already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_san_004(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -635,14 +635,14 @@ def test_boot_san_004(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_san_device_add failed, error: Instance of San device is already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_san_005(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -673,14 +673,14 @@ def test_boot_san_005(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_san_device_add failed, error: Instance of 'primary' san image is already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_san_006(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -714,14 +714,14 @@ def test_boot_san_006(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_san_device_add failed, error: Instance of SAN target type 'primary' is already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_san_007(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -754,14 +754,14 @@ def test_boot_san_007(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_san_device_add failed, error: Instance of San device is already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_san_008(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -796,14 +796,14 @@ def test_boot_san_008(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_san_device_add failed, error: Both instance of SAN Devices are already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_san_009(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -837,15 +837,15 @@ def test_boot_san_009(mock_login, mock_query_dn, mock_order_clear):
                 },
     ]
     expected_error_message = "_san_device_add failed, error: Both instance of SAN Devices are already added."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_special_case_01(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -865,14 +865,14 @@ def test_boot_special_case_01(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_device_add failed, error: local_disk cannot be added with other local devices."
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_special_case_02(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -893,15 +893,15 @@ def test_boot_special_case_02(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_device_add failed, error: 'cd_dvd' or 'cd_dvd_local, cd_dvd_remote'"
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_special_case_03(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -921,14 +921,14 @@ def test_boot_special_case_03(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_device_add failed, error: 'floppy' or 'floppy_local, floppy_remote'"
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_special_case_04(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -948,14 +948,14 @@ def test_boot_special_case_04(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_local_device_add failed, error: Device 'sdcard' already exist at order '1'"
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
 
-@patch('ucsm_apis.server.boot._boot_policy_order_clear')
-@patch.object(UcsHandle, 'query_dn')
-@patch.object(UcsHandle, 'login')
+@patch('ucsm_apis.server.boot._boot_policy_order_clear', autospec=True)
+@patch.object(UcsHandle, 'query_dn', autospec=True)
+@patch.object(UcsHandle, 'login', autospec=True)
 def test_boot_special_case_05(mock_login, mock_query_dn, mock_order_clear):
     mock_login.return_value = True
     bp = LsbootPolicy("org-root", name="test")
@@ -975,7 +975,7 @@ def test_boot_special_case_05(mock_login, mock_query_dn, mock_order_clear):
     ]
 
     expected_error_message = "_vmedia_device_add failed, error: Device 'virtual_drive' already exist at order '1'"
-    with assert_raises(UcsOperationError) as error:
-         boot_policy_order_set(handle, boot_policy_dn, devices)
-    assert_equal(error.exception.message, expected_error_message)
+    with pytest.raises(boot.UcsOperationError) as error:
+         boot.boot_policy_order_set(handle, boot_policy_dn, devices)
+    assert error.value.args[0] == expected_error_message
 
