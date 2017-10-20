@@ -19,6 +19,7 @@ from ucsmsdk.ucsexception import UcsOperationError
 _keyring_base_dn = "sys/pki-ext"
 _tp_base_dn = "sys/pki-ext"
 
+
 def key_ring_create(handle, name, modulus="mod2048", regen="no",
                     policy_owner="local", tp=None, cert=None, descr=None,
                     **kwargs):
@@ -207,8 +208,9 @@ def certificate_request_create(handle, name,
         UcsOperationError: If PkiKeyRing is not present
 
     Example:
-        certificate_request_create(handle, name="mykeyring", dns="10.10.10.100",
-                                country="IN")
+        certificate_request_create(handle, name="mykeyring",
+                                   dns="10.10.10.100",
+                                   country="IN")
     """
     from ucsmsdk.mometa.pki.PkiCertReq import PkiCertReq
 
@@ -375,6 +377,7 @@ def trusted_point_get(handle, name, caller="trusted_point_get"):
                                 "Trusted Point '%s' does not exist" % dn)
     return mo
 
+
 def trusted_point_exists(handle, name, **kwargs):
     """
     Checks if a trusted point exists
@@ -448,4 +451,3 @@ def trusted_point_delete(handle, name):
     mo = trusted_point_get(handle, name, caller="trusted_point_delete")
     handle.remove_mo(mo)
     handle.commit()
-

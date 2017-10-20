@@ -14,8 +14,9 @@ from ucsmsdk.ucsexception import UcsOperationError
 
 _base_dn = "sys/svc-ext"
 
+
 def timezone_set(handle, timezone, policy_owner="local",
-                  admin_state="enabled", port="0", descr=None, **kwargs):
+                 admin_state="enabled", port="0", descr=None, **kwargs):
     """
     sets the timezone of the UCSM
 
@@ -48,7 +49,7 @@ def timezone_set(handle, timezone, policy_owner="local",
     mo = handle.query_dn(_base_dn + "/datetime-svc")
     if not mo:
         raise UcsOperationError("timezone_set",
-                                 "timezone does not exist")
+                                "timezone does not exist")
 
     args = {'timezone': timezone,
             'policy_owner': policy_owner,

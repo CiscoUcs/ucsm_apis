@@ -17,6 +17,7 @@ from ucsmsdk import ucsgenutils
 from ucsmsdk.ucsexception import UcsOperationError
 from ucsmsdk.ucscoreutils import load_class
 
+
 def boot_policy_create(handle, name, org_dn="org-root",
                        reboot_on_update="no", enforce_vnic_name="yes",
                        boot_mode="legacy", policy_owner="local",
@@ -202,7 +203,7 @@ def _boot_security_configure(handle, name, org_dn, secure_boot, **kwargs):
 
     args = {
             'secure_boot': secure_boot
-        }
+           }
 
     mo.set_prop_multiple(**args)
 
@@ -234,6 +235,7 @@ def boot_security_enable(handle, name, org_dn="org-root", **kwargs):
     """
     return _boot_security_configure(handle, name, org_dn, secure_boot="yes",
                                     **kwargs)
+
 
 def boot_security_exists(handle, name, org_dn="org-root", **kwargs):
     """
@@ -309,15 +311,15 @@ def _local_lun_add(parent_mo, order, lun_name=None, type=None):
                 "_local_lun_add",
                 "Both instance of Local Lun already added.")
         if mo[0].child[0].type == type:
-            raise UcsOperationError(
-        "_local_lun_add",
-        "Instance of Local Lun of type '%s' already added at  order '%s'." %
-        (type, mo[0].order))
+            raise UcsOperationError("_local_lun_add",
+                                    "Instance of Local Lun of type '%s' "
+                                    "already added at  order '%s'." %
+                                   (type, mo[0].order))
 
         if not lun_name or not type:
-            raise UcsOperationError(
-                "_local_lun_add",
-                "Required parameter 'lun_name' or 'type' missing.")
+            raise UcsOperationError("_local_lun_add",
+                                    "Required parameter 'lun_name' "
+                                    "or 'type' missing.")
 
         LsbootLocalLunImagePath(parent_mo_or_dn=mo[0], lun_name=lun_name,
                                 type=type)
@@ -327,9 +329,9 @@ def _local_lun_add(parent_mo, order, lun_name=None, type=None):
     if not lun_name and not type:
         return
     if (lun_name and not type) or (not lun_name and type):
-        raise UcsOperationError(
-            "_local_lun_add",
-            "Required parameter 'lun_name' or 'type' missing.")
+        raise UcsOperationError("_local_lun_add",
+                                "Required parameter 'lun_name' \
+                                or 'type' missing.")
     LsbootLocalLunImagePath(parent_mo_or_dn=mo,
                             lun_name=lun_name,
                             type=type)
@@ -344,10 +346,9 @@ def _local_jbod_add(parent_mo, order, slot_number):
     mo = [mo for mo in parent_mo.child
           if mo.get_class_id() == "LsbootLocalDiskImage"]
     if mo:
-        raise UcsOperationError(
-            "_local_jbod_add",
-            "Instance of Local JBOD already added at order '%s'" %
-            mo[0].order)
+        raise UcsOperationError("_local_jbod_add",
+                                "Instance of Local JBOD already "
+                                "added at order '%s'" % mo[0].order)
 
     if not slot_number:
         raise UcsOperationError("_local_jbod_add",
@@ -638,18 +639,20 @@ def _iscsi_device_add(parent_mo, order, vnic_name):
 
 
 _local_devices = {
-   "local_disk": ["LsbootDefaultLocalImage", None],
-   "local_lun": ["LsbootLocalHddImage", _local_lun_add],
-   "local_jbod": ["LsbootLocalDiskImage", _local_jbod_add],
-   "sdcard": ["LsbootUsbFlashStorageImage", None],
-   "internal_usb": ["LsbootUsbInternalImage", None],
-   "external_usb": ["LsbootUsbExternalImage", None],
-   "embedded_lun": ["LsbootEmbeddedLocalLunImage", None],
-   "embedded_disk": ["LsbootEmbeddedLocalDiskImage", _local_embedded_disk_add],
+    "local_disk": ["LsbootDefaultLocalImage", None],
+    "local_lun": ["LsbootLocalHddImage", _local_lun_add],
+    "local_jbod": ["LsbootLocalDiskImage", _local_jbod_add],
+    "sdcard": ["LsbootUsbFlashStorageImage", None],
+    "internal_usb": ["LsbootUsbInternalImage", None],
+    "external_usb": ["LsbootUsbExternalImage", None],
+    "embedded_lun": ["LsbootEmbeddedLocalLunImage", None],
+    "embedded_disk": ["LsbootEmbeddedLocalDiskImage",
+                      _local_embedded_disk_add],
 }
 
 _local_device_invert = dict(
-zip([value[0] for value in _local_devices.values()], _local_devices.keys()))
+    zip([value[0] for value in _local_devices.values()],
+        _local_devices.keys()))
 
 _vmedia_devices = {
     "cd_dvd": "read-only",
@@ -713,8 +716,8 @@ def _efi_device_add(parent_mo, device_order, **kwargs):
     mo = [mo for mo in parent_mo.child if mo.get_class_id() == class_id]
     if mo:
         raise UcsOperationError(
-        "__efi_device_add", "Device '%s' already exist at order '%s'" %
-        (device_name, mo[0].order))
+            "__efi_device_add", "Device '%s' already exist at order '%s'" %
+            (device_name, mo[0].order))
 
     class_struct = load_class(class_id)
     class_obj = class_struct(parent_mo_or_dn=parent_mo,
@@ -790,7 +793,7 @@ def _device_add(handle, boot_policy, devices):
         elif device_name == "efi":
             _efi_device_add(boot_policy, device_order, **device_props)
         else:
-            raise UcsOpeartionError(
+            raise UcsOperationError(
                 "_device_add",
                 " Invalid Device <%s>" %
                 device_name)
@@ -841,7 +844,7 @@ def _extract_device_from_bp_child(bp_child):
         elif class_id == "LsbootEFIShell":
             bp_devices["efi"] = ch_
         else:
-            raise UcsOpeationError("_compare_boot_policy", "Unknown Device.")
+            raise UcsOperationError("_compare_boot_policy", "Unknown Device.")
 
     return bp_devices
 
@@ -981,7 +984,8 @@ def _compare_lan(existing_lan, expected_lan):
                         vnic_name=expected_child_secondary.vnic_name)
 
 
-def _compare_san_sub_child(existing_sub_child, expected_sub_child):
+def _compare_san_sub_child(existing_sub_child, expected_sub_child,
+                           expected_san):
 
     if len(existing_sub_child) != len(expected_sub_child):
         raise UcsOperationError("_compare_boot_policy",
