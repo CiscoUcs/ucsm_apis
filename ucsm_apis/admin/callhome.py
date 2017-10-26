@@ -20,23 +20,23 @@ _base_dn = "call-home"
 
 
 def callhome_enable(handle, alert_throttling_admin_state="on",
-                     policy_owner="local",name=None, descr=None, **kwargs):
+                    policy_owner="local", name=None, descr=None, **kwargs):
     """
     Enables call home alert.
 
     NOTE:
-	If enabling call home for the first time then first update contact and
-	smtp server.
-	- contact information using 'callhome_contact_update'
-		callhome_contact_update(handle,
-							     contact="ciscoucs",
-                                 phone="+911234567890",
-                                 email="ciscoucs@cisco.com",
-                                 addr="cisco",
-							     reply_to="ciscoucs@cisco.com"
+        If enabling call home for the first time then first update contact and
+        smtp server.
+        - contact information using 'callhome_contact_update'
+        callhome_contact_update(handle,
+                                contact="ciscoucs",
+                                phone="+911234567890",
+                                email="ciscoucs@cisco.com",
+                                addr="cisco",
+                                reply_to="ciscoucs@cisco.com"
                                  )
-    - smtp server using 'callhome_smtp_update'.
-		callhome_smtp_update(handle, host="1.1.1.1")
+        - smtp server using 'callhome_smtp_update'.
+        callhome_smtp_update(handle, host="1.1.1.1")
 
 
     Args:
@@ -61,7 +61,7 @@ def callhome_enable(handle, alert_throttling_admin_state="on",
     mo = handle.query_dn(_base_dn)
     if not mo:
         raise UcsOperationError("callhome_state_enable",
-                                 "Call home not available.")
+                                "Call home not available.")
     args = {'admin_state': "on",
             'policy_owner': policy_owner,
             'alert_throttling_admin_state': alert_throttling_admin_state,
@@ -125,7 +125,7 @@ def callhome_disable(handle):
     mo = handle.query_dn(_base_dn)
     if not mo:
         raise UcsOperationError("callhome_disable",
-                                 "Call home not available.")
+                                "Call home not available.")
 
     args = {'admin_state': "off"}
 
@@ -185,7 +185,7 @@ def callhome_contact_update(handle, contact, phone, email, addr, customer,
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("callhome_config",
-                                 "Call home source '%s' not available." % dn)
+                                "Call home source '%s' not available." % dn)
 
     args = {'contact': contact,
             'phone': phone,
@@ -314,8 +314,8 @@ def callhome_smtp_exists(handle, **kwargs):
 
 
 def callhome_profile_create(handle, name, format="xml", max_size="1000000",
-                             level="debug", alert_groups=None,
-                             descr=None, **kwargs):
+                            level="debug", alert_groups=None,
+                            descr=None, **kwargs):
     """
     Creates callhome profile.
 
@@ -408,7 +408,7 @@ def callhome_profile_exists(handle, name, **kwargs):
     """
     try:
         mo = callhome_profile_get(handle, name,
-                                   caller="callhome_profile_exist")
+                                  caller="callhome_profile_exist")
     except UcsOperationError:
         return (False, None)
 
@@ -502,7 +502,7 @@ def callhome_profile_email_add(handle, profile_name, email, **kwargs):
     from ucsmsdk.mometa.callhome.CallhomeDest import CallhomeDest
 
     profile = callhome_profile_get(handle, profile_name,
-                                    caller="callhome_profile_email_add")
+                                   caller="callhome_profile_email_add")
     mo = CallhomeDest(parent_mo_or_dn=profile, email=email)
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, modify_present=True)
@@ -511,7 +511,7 @@ def callhome_profile_email_add(handle, profile_name, email, **kwargs):
 
 
 def callhome_profile_email_get(handle, profile_name, email,
-                                caller="callhome_profile_email_get"):
+                               caller="callhome_profile_email_get"):
     """
     Gets receipient email from callhome profile.
 
@@ -598,32 +598,33 @@ def callhome_profile_email_remove(handle, profile_name, email):
 
 
 def callhome_policy_create(handle, cause, admin_state="enabled",
-                            name=None, descr=None, **kwargs):
+                           name=None, descr=None, **kwargs):
     """
     Creates callhome policy.
 
     Args:
         handle (UcsHandle)
         cause (string): cause to trigger call home alert
-		 valid values are "adaptor-mismatch", "arp-targets-config-error",
-		  "association-failed", "backplane-port-problem",
-	      "configuration-failure", "configuration-mismatch",
-		  "connectivity-problem", "election-failure", "equipment-degraded",
-		  "equipment-deprecated", "equipment-disabled",
-		  "equipment-inaccessible", "equipment-inoperable",
-		  "equipment-missing", "equipment-offline", "equipment-problem",
-		  "equipment-removed", "equipment-unacknowledged",
-		  "equipment-unhealthy", "fan-removal", "fru-problem",
-		  "health-critical", "health-led-amber", "health-led-amber-blinking",
-		  "health-major", "identity-unestablishable", "image-unusable",
-		  "inventory-failed", "kernel-mem-critical-threshold",
-		  "license-graceperiod-expired", "limit-reached", "link-down",
-		  "management-services-failure", "management-services-unresponsive",
-		  "memory-error", "mgmtif-down", "ndisc-targets-config-error",
-		  "near-max-limit", "not-supported", "port-failed", "power-problem",
-		  "psu-insufficient", "psu-mixed-mode", "thermal-problem",
-		  "unspecified", "version-incompatible", "vif-ids-mismatch",
-		  "voltage-problem"
+        valid values are:
+            "adaptor-mismatch", "arp-targets-config-error",
+            "association-failed", "backplane-port-problem",
+            "configuration-failure", "configuration-mismatch",
+            "connectivity-problem", "election-failure", "equipment-degraded",
+            "equipment-deprecated", "equipment-disabled",
+            "equipment-inaccessible", "equipment-inoperable",
+            "equipment-missing", "equipment-offline", "equipment-problem",
+            "equipment-removed", "equipment-unacknowledged",
+            "equipment-unhealthy", "fan-removal", "fru-problem",
+            "health-critical", "health-led-amber", "health-led-amber-blinking",
+            "health-major", "identity-unestablishable", "image-unusable",
+            "inventory-failed", "kernel-mem-critical-threshold",
+            "license-graceperiod-expired", "limit-reached", "link-down",
+            "management-services-failure", "management-services-unresponsive",
+            "memory-error", "mgmtif-down", "ndisc-targets-config-error",
+            "near-max-limit", "not-supported", "port-failed", "power-problem",
+            "psu-insufficient", "psu-mixed-mode", "thermal-problem",
+            "unspecified", "version-incompatible", "vif-ids-mismatch",
+            "voltage-problem"
         admin_state (string): admin_state
          valid values are "disabled", "enabled"
         name (string): policy name
@@ -704,7 +705,7 @@ def callhome_policy_exists(handle, cause, **kwargs):
     """
     try:
         mo = callhome_policy_get(handle, cause,
-                                  caller="callhome_policy_exists")
+                                 caller="callhome_policy_exists")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
@@ -761,16 +762,16 @@ def callhome_policy_delete(handle, cause):
 
 
 def callhome_system_inventory_configure(handle,
-                                         admin_state="on",
-                                         interval_days="30",
-                                         time_of_day_hour="0",
-                                         time_of_day_minute="0",
-                                         maximum_retry_count="1",
-                                         poll_interval_seconds="300",
-                                         retry_delay_minutes="10",
-                                         minimum_send_now_interval_seconds="5",
-                                         send_now="no",
-                                         **kwargs):
+                                        admin_state="on",
+                                        interval_days="30",
+                                        time_of_day_hour="0",
+                                        time_of_day_minute="0",
+                                        maximum_retry_count="1",
+                                        poll_interval_seconds="300",
+                                        retry_delay_minutes="10",
+                                        minimum_send_now_interval_seconds="5",
+                                        send_now="no",
+                                        **kwargs):
     """
     Configures callhome system inventory
 
@@ -976,4 +977,3 @@ def callhome_anonymous_reporting_exists(handle, **kwargs):
 
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
-

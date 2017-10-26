@@ -18,6 +18,7 @@ from ucsmsdk.ucsexception import UcsOperationError
 
 _base_dn = "sys/svc-ext"
 
+
 def snmp_config_get(handle, caller="snmp_config_get"):
     """
     gets snmp config
@@ -271,7 +272,6 @@ def snmp_trap_exists(handle, hostname, **kwargs):
     except UcsOperationError:
         return (False, None)
 
-
     if 'version' in kwargs and kwargs['version'] == 'v1':
         kwargs['notification_type'] = 'traps'
 
@@ -486,4 +486,3 @@ def snmp_user_remove(handle, name):
     mo = snmp_user_get(handle, name, caller="snmp_user_remove")
     handle.remove_mo(mo)
     handle.commit()
-
