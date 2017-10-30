@@ -17,6 +17,7 @@ from ucsmsdk.ucsexception import UcsOperationError
 
 _syslog_dn = "sys/svc-ext/syslog"
 
+
 def syslog_local_console_enable(handle, severity="emergencies",
                                 name=None, descr=None, **kwargs):
     """
@@ -47,7 +48,7 @@ def syslog_local_console_enable(handle, severity="emergencies",
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_console_enable",
-                                 "syslog console '%s' does not exist." % dn)
+                                "syslog console '%s' does not exist." % dn)
 
     args = {'admin_state': CommSyslogConsoleConsts.ADMIN_STATE_ENABLED,
             'severity': severity,
@@ -85,7 +86,7 @@ def syslog_local_console_disable(handle):
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_console_disable",
-                                 "syslog console does not exist.")
+                                "syslog console does not exist.")
 
     args = {'admin_state': CommSyslogConsoleConsts.ADMIN_STATE_DISABLED}
 
@@ -157,7 +158,7 @@ def syslog_local_monitor_enable(handle, severity="emergencies",
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_monitor_enable",
-                                 "syslog monitor '%s' does not exist." % dn)
+                                "syslog monitor '%s' does not exist." % dn)
 
     args = {'admin_state': CommSyslogMonitorConsts.ADMIN_STATE_ENABLED,
             'severity': severity,
@@ -195,7 +196,7 @@ def syslog_local_monitor_disable(handle):
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_monitor_disable",
-                                 "syslog monitor does not exist.")
+                                "syslog monitor does not exist.")
 
     args = {'admin_state': CommSyslogMonitorConsts.ADMIN_STATE_DISABLED}
 
@@ -268,7 +269,7 @@ def syslog_local_file_enable(handle, severity="emergencies", size=None,
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_file_enable",
-                                 "syslog file '%s' does not exist." % dn)
+                                "syslog file '%s' does not exist." % dn)
 
     args = {'admin_state': CommSyslogFileConsts.ADMIN_STATE_ENABLED,
             'severity': severity,
@@ -307,7 +308,7 @@ def syslog_local_file_disable(handle):
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_local_file_disable",
-                                 "syslog file does not exist.")
+                                "syslog file does not exist.")
 
     args = {'admin_state': CommSyslogFileConsts.ADMIN_STATE_DISABLED}
 
@@ -382,7 +383,7 @@ def syslog_remote_enable(handle, name, hostname, severity="emergencies",
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_remote_enable",
-                                 "Remote Destination '%s' does not exist" % dn)
+                                "Remote Destination '%s' does not exist" % dn)
 
     args = {'admin_state': CommSyslogClientConsts.ADMIN_STATE_ENABLED,
             'hostname': hostname,
@@ -423,7 +424,7 @@ def syslog_remote_disable(handle, name):
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_remote_disable",
-                                 "Remote Destination '%s' does not exist" % dn)
+                                "Remote Destination '%s' does not exist" % dn)
 
     args = {'admin_state': CommSyslogClientConsts.ADMIN_STATE_DISABLED}
 
@@ -498,7 +499,7 @@ def syslog_source_configure(handle, faults=None, audits=None, events=None,
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("syslog_source",
-                                 "local sources '%s' does not exist" % dn)
+                                "local sources '%s' does not exist" % dn)
 
     args = {'faults': faults,
             'audits': audits,
@@ -539,4 +540,3 @@ def syslog_source_exists(handle, **kwargs):
 
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
-

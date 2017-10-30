@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import sys
+import unittest
+
+
 """
 test_ucsm_apis
 ----------------------------------
 
 Tests for `ucsm_apis` module.
+This class provides testing functionality that is common across all tests.
 """
-
-
-import sys
-import unittest
-
-from ucsm_apis import ucsm_apis
-
 
 
 class TestUcsm_apis(unittest.TestCase):
@@ -24,5 +22,3 @@ class TestUcsm_apis(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def test_000_something(self):
-        pass

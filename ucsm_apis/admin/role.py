@@ -18,6 +18,7 @@ from ucsmsdk.ucsexception import UcsOperationError
 
 _user_dn = "sys/user-ext"
 
+
 def role_create(handle, name, priv="read-only", policy_owner="local",
                 descr=None, **kwargs):
     """
