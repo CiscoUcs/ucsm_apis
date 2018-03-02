@@ -24,7 +24,6 @@ def check_flake8(argv=None):
         sys.exit(1)
 
     files = added_files()
-
     retval = 0
     for filename in files:
         try:

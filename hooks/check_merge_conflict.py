@@ -40,6 +40,8 @@ def detect_merge_conflict(argv=None):
             for i, line in enumerate(inputfile):
                 for pattern in CONFLICT_PATTERNS:
                     if line.startswith(pattern):
+                        if retcode == 0:
+                            print("***** merge conflict check failed *****")
                         print(WARNING_MSG.format(
                             pattern.decode(), filename, i + 1,
                         ))
