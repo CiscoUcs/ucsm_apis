@@ -15,7 +15,6 @@
 This module performs the operation related to Authentication management.
 """
 from ucsmsdk.ucsexception import UcsOperationError
-from ucsmsdk.mometa.aaa.AaaAuthRealm import AaaAuthRealm
 
 _auth_realm_dn = "sys/auth-realm"
 
@@ -479,4 +478,3 @@ def native_auth_console_exists(handle, **kwargs):
 
     mo_exists = mo.check_prop_match(**kwargs)
     return (mo_exists, mo if mo_exists else None)
-

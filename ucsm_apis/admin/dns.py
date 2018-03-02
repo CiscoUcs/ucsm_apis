@@ -18,6 +18,7 @@ from ucsmsdk.ucsexception import UcsOperationError
 
 _dns_svc_dn = "sys/svc-ext/dns-svc"
 
+
 def dns_server_get(handle, name, caller="dns_server_get"):
     """
     Gets the dns entry
@@ -33,7 +34,7 @@ def dns_server_get(handle, name, caller="dns_server_get"):
         bool_var = dns_server_get(handle, "10.10.10.10")
     """
 
-    dn = _dns_svc_dn  + "/dns-" + name
+    dn = _dns_svc_dn + "/dns-" + name
     mo = handle.query_dn(dn)
     if mo is None:
         raise UcsOperationError(caller, "Dns Server '%s' does not exist" % dn)
@@ -144,4 +145,3 @@ def dns_server_remove(handle, name):
     mo = dns_server_get(handle, name, caller="dns_server_remove")
     handle.remove_mo(mo)
     handle.commit()
-

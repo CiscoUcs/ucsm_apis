@@ -185,13 +185,14 @@ def locale_org_assign(handle, locale_name, name, org_dn="org-root", descr=None,
 
     if not handle.query_dn(org_dn):
         raise UcsOperationError("locale_org_assign",
-                                 "org '%s' does not exist" % org_dn)
+                                "org '%s' does not exist" % org_dn)
 
     mo = AaaOrg(parent_mo_or_dn=locale, name=name, org_dn=org_dn, descr=descr)
     mo.set_prop_multiple(**kwargs)
     handle.add_mo(mo, modify_present=True)
     handle.commit()
     return mo
+
 
 def locale_org_exists(handle, locale_name, name, **kwargs):
     """
@@ -249,8 +250,7 @@ def locale_org_unassign(handle, locale_name, name):
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("locale_org_unassign",
-                                 "org '%s' not assigned to locale" % dn)
+                                "org '%s' not assigned to locale" % dn)
 
     handle.remove_mo(mo)
     handle.commit()
-

@@ -15,12 +15,12 @@
 This module performs the operation related to ldap.
 """
 from ucsmsdk.ucsexception import UcsOperationError
-from ..admin.locale import locale_get, locale_exists
 
 _ldap_dn = "sys/ldap-ext"
 
+
 def ldap_configure(handle, timeout="30", attribute="CiscoAvPair",
-                   filter="cn=$userid", retries="1", policy_owner = "local",
+                   filter="cn=$userid", retries="1", policy_owner="local",
                    basedn=None, descr=None, **kwargs):
     """
     Configures the ldap
@@ -441,7 +441,7 @@ def ldap_group_delete(handle, name):
 
 
 def ldap_group_role_add(handle, ldap_group_name, name, descr=None,
-                            **kwargs):
+                        **kwargs):
     """
     add role to ldap group map
 
@@ -479,7 +479,7 @@ def ldap_group_role_add(handle, ldap_group_name, name, descr=None,
 
 
 def ldap_group_role_get(handle, ldap_group_name, name,
-                            caller="ldap_group_role_get"):
+                        caller="ldap_group_role_get"):
     """
     Gets the role  for the respective ldap group map
 
@@ -533,7 +533,7 @@ def ldap_group_role_exists(handle, ldap_group_name, name, **kwargs):
     """
     try:
         mo = ldap_group_role_get(handle, ldap_group_name, name,
-                                     caller="ldap_group_role_exists")
+                                 caller="ldap_group_role_exists")
     except UcsOperationError:
         return (False, None)
     mo_exists = mo.check_prop_match(**kwargs)
@@ -561,7 +561,7 @@ def ldap_group_role_remove(handle, ldap_group_name, name):
                                name="test_role")
     """
     mo = ldap_group_role_get(handle, ldap_group_name, name,
-                                 caller="ldap_group_role_remove")
+                             caller="ldap_group_role_remove")
     handle.remove_mo(mo)
     handle.commit()
 
@@ -873,7 +873,7 @@ def ldap_provider_group_provider_get(handle, group_name, name,
                                          group_name="test_ldap_provider_group",
                                          name="test_provider")
     """
-    provider_group_dn = _ldap_dn+ "/providergroup-" + group_name
+    provider_group_dn = _ldap_dn + "/providergroup-" + group_name
     provider_ref_dn = provider_group_dn + "/provider-ref-" + name
     mo = handle.query_dn(provider_ref_dn)
     if mo is None:

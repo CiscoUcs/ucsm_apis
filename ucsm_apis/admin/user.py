@@ -18,6 +18,7 @@ from ucsmsdk.ucsexception import UcsOperationError
 
 _base_dn = "sys/user-ext"
 
+
 def user_create(handle, name, pwd=None, clear_pwd_history="no",
                 pwd_life_time="no-password-expire", account_status="active",
                 expires="no", expiration="never",
@@ -203,6 +204,7 @@ def user_delete(handle, name):
     handle.remove_mo(mo)
     handle.commit()
 
+
 def _user_role_add(handle, user_mo, name, descr=None, **kwargs):
     """
     adds single role to an user
@@ -214,6 +216,7 @@ def _user_role_add(handle, user_mo, name, descr=None, **kwargs):
     handle.add_mo(mo, modify_present=True)
     return mo
 
+
 def user_role_add(handle, user_name, name, descr=None, **kwargs):
     """
     adds role to an user
@@ -221,7 +224,8 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): single role or a comma separated string of multiple roles
+        name (string): single role or a comma separated string
+                       of multiple roles
         descr (string): descr
         **kwargs: Any additional key-value pair of managed object(MO)'s
                   property and value, which are not part of regular args.
@@ -236,7 +240,6 @@ def user_role_add(handle, user_name, name, descr=None, **kwargs):
     Example:
         user_role_add(handle, user_name="test", name="admin")
     """
-    from ucsmsdk.mometa.aaa.AaaUserRole import AaaUserRole
 
     user = user_get(handle, user_name, "user_role_add")
 
@@ -293,9 +296,12 @@ def user_role_exists(handle, user_name, name, **kwargs):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): single role or a comma separated string of multiple roles
-        **kwargs: key-value pair of managed object(MO) property and value, Use
-                  'print(ucscoreutils.get_meta_info(<classid>).config_props)'
+        name (string): single role or a comma separated string
+                       of multiple roles
+        **kwargs: key-value pair of managed object(MO) property and value,
+                  Use 'print(ucscoreutils.
+                  get_meta_info(<classid>).
+                  config_props)'
                   to get all configurable properties of class
 
     Returns:
@@ -353,7 +359,8 @@ def user_role_remove(handle, user_name, name):
     Args:
         handle (UcsHandle)
         user_name (string): username
-        name (string): single role or a comma separated string of multiple roles
+        name (string): single role or a comma separated
+                       string of multiple roles
 
     Returns:
         None
@@ -660,7 +667,7 @@ def password_profile_modify(handle,
     mo = handle.query_dn(dn)
     if not mo:
         raise UcsOperationError("password_profile_modify",
-                                 "password profile does not exist.")
+                                "password profile does not exist.")
 
     args = {'min_passphrase_len': min_passphrase_len,
             'policy_owner': policy_owner,
