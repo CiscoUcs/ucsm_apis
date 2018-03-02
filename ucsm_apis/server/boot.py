@@ -928,8 +928,8 @@ def _compare_embedded_disk(existing_disk, expected_disk):
     if len(existing_child) == 1:
         _device_compare(existing_child[0],
                         'embedded_disk',
-                        type=expected_disk.type,
-                        slot_number=expected_disk.slot_number)
+                        type=expected_child[0].type,
+                        slot_number=expected_child[0].slot_number)
     if len(existing_child) == 2:
         existing_child_primary, existing_child_secondary =\
             _child_pri_sec_filter(existing_child)
@@ -962,8 +962,8 @@ def _compare_lan(existing_lan, expected_lan):
     if len(existing_child) == 1:
         _device_compare(existing_child[0],
                         'lan',
-                        type=expected_lan.type,
-                        vnic_name=expected_lan.vnic_name)
+                        type=expected_child[0].type,
+                        vnic_name=expected_child[0].vnic_name)
     if len(existing_child) == 2:
         existing_child_primary, existing_child_secondary =\
             _child_pri_sec_filter(existing_child)
@@ -992,9 +992,9 @@ def _compare_san_sub_child(existing_sub_child, expected_sub_child):
     if len(existing_sub_child) == 1:
         _device_compare(existing_sub_child[0],
                         'san',
-                        type=expected_san.type,
-                        wwn=expected_sub_child.wwn,
-                        lun=expected_sub_child.lun)
+                        type=expected_sub_child[0].type,
+                        wwn=expected_sub_child[0].wwn,
+                        lun=expected_sub_child[0].lun)
     if len(existing_sub_child) == 2:
         existing_sub_child_primary, existing_sub_child_secondary =\
             _child_pri_sec_filter(existing_sub_child)
@@ -1030,11 +1030,11 @@ def _compare_san(existing_san, expected_san):
     if len(existing_child) == 1:
         _device_compare(existing_child[0],
                         'san',
-                        type=expected_san.type,
-                        vnic_name=expected_san.vnic_name)
+                        type=expected_child[0].type,
+                        vnic_name=expected_child[0].vnic_name)
 
-        existing_sub_child = existing_child.child
-        expected_sub_child = expected_child.child
+        existing_sub_child = existing_child[0].child
+        expected_sub_child = expected_child[0].child
 
         _compare_san_sub_child(existing_sub_child, expected_sub_child)
 
@@ -1103,7 +1103,7 @@ def _compare_efi(existing_efi, expected_efi):
     _device_compare(existing_efi, 'efi', order=expected_efi.order)
 
 
-def _compare_boot_policy(existing_boot_policy, expected_boot_policy):
+def _compare_boot_policy(existing_boot_policy, expected_boot_policy, debug=False):
     # check child count
     existing_bp_child = existing_boot_policy.child
     expected_bp_child = expected_boot_policy.child
@@ -1111,6 +1111,9 @@ def _compare_boot_policy(existing_boot_policy, expected_boot_policy):
     existing_bp_child = [ch for ch in existing_bp_child
                          if ch.get_class_id() != "LsbootBootSecurity"]
 
+    if debug:
+        print("existing_bp_child:\n%s" % existing_bp_child)
+        print("expected_bp_child:\n%s" % expected_bp_child)
     if len(existing_bp_child) != len(expected_bp_child):
         raise UcsOperationError("_compare_boot_policy",
                                 "Child count mismatch.")
@@ -1418,8 +1421,11 @@ def boot_policy_order_exists(handle, name, devices, org_dn="org-root",
         return False, None
 
     try:
-        _compare_boot_policy(existing_boot_policy, expected_boot_policy)
+        _compare_boot_policy(existing_boot_policy, expected_boot_policy, debug)
     except Exception as err:
+        if debug:
+            import traceback
+            print str(traceback.print_exc())
         return False, None
 
     return True, boot_policy
