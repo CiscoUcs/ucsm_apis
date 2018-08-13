@@ -17,6 +17,9 @@ from ucsmsdk import ucsgenutils
 from ucsmsdk.ucsexception import UcsOperationError
 from ucsmsdk.ucscoreutils import load_class
 
+import six
+
+
 def boot_policy_create(handle, name, org_dn="org-root",
                        reboot_on_update="no", enforce_vnic_name="yes",
                        boot_mode="legacy", policy_owner="local",
@@ -769,7 +772,7 @@ def _device_add(handle, boot_policy, devices):
     for device in devices:
         device_name = device["device_name"]
         device_order = str(device["device_order"])
-        device_props = {key: value for key, value in device.iteritems()
+        device_props = {key: value for key, value in six.iteritems(device)
                         if key not in ["device_name", "device_order"]}
         if device_name in _local_devices:
             if not ls_boot_storage_exist:
@@ -1380,7 +1383,7 @@ def boot_policy_order_exists(handle, name, devices, org_dn="org-root",
 
          *note - mandatory keys are 'device_name' and 'device_order'
                  other key depends on the device.
-        debug (bool): True/False, if True, incase of error print stacktrace
+        debug (bool): True/False, if True, incase of error print(stacktrace)
 
     Returns:
         (True/False, LsbootPolicy MO/None)
@@ -1417,7 +1420,7 @@ def boot_policy_order_exists(handle, name, devices, org_dn="org-root",
     except Exception as err:
         if debug:
             import traceback
-            print str(traceback.print_exc())
+            print(traceback.format_exc())
         return False, None
 
     try:
@@ -1425,7 +1428,7 @@ def boot_policy_order_exists(handle, name, devices, org_dn="org-root",
     except Exception as err:
         if debug:
             import traceback
-            print str(traceback.print_exc())
+            print(traceback.format_exc())
         return False, None
 
     return True, boot_policy
