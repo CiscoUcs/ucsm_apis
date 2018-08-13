@@ -9,13 +9,12 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    # TODO: put package requirements here
-]
+with open('requirements.txt') as rf:
+    requirements = rf.readlines()
 
-test_requirements = [
-    # TODO: put package test requirements here
-]
+with open('test-requirements.txt') as rf:
+    test_requirements = rf.readlines()
+
 
 setup(
     name='ucsm_apis',
@@ -48,6 +47,6 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
     ],
-    tests_require=['nose'],
+    tests_require=test_requirements,
     test_suite='nose.collector',
 )
